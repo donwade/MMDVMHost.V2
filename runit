@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ "$1" == "--stop" ]; then
+    systemctl stop mmdvmhost.service
+
+elif [ "$1" == "--start" ]; then
+    systemctl start mmdvmhost.service
+
+elif [ "$1" == "--disable" ]; then
+    systemctl disable mmdvmhost.service
+
+elif [ "$1" == "--stop" ]; then
+    systemctl start mmdvmhost.service
+else
+    echo "runit  --stop|--start| --enable | --disable "
+fi
+echo "-----------------------------------------"
+systemctl --no-pager  status mmdvmhost.service
+
+echo "-----------------------------------------"
+journalctl -u mmdvmhost.service --no-pager
+
+echo "-----------------------------------------"
+echo -e "$_RED"
+
+ps -ef | grep -v "grep" | grep  /usr/local/bin/MMDVMHost
+echo -e "$_RESET"
+
+set -x
+cat /var/log/mmdvm/*.log
+
