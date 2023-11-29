@@ -1,10 +1,12 @@
 # This makefile is for all platforms, but doesn't include support for the HD44780, OLED, or PCF8574 displays on the Raspberry Pi.
 
-CC      = cc
-CXX     = c++
-CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -I/usr/local/include
-LIBS    = -lpthread -lutil -lsamplerate
-LDFLAGS = -g -L/usr/local/lib
+
+
+CC      ?= cc
+CXX     ?= c++
+CFLAGS  := $(CFLAGS) -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -I/usr/local/include
+LIBS    := $(LDFLAGS)  -lpthread -lutil -lm -lsamplerate $(LDFLAGS)
+LDFLAGS := $(LDFLAGS) -g -L/usr/local/lib $(LDFLAGS)
 
 OBJECTS = \
 		AMBEFEC.o BCH.o AX25Control.o AX25Network.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o \
@@ -26,6 +28,7 @@ RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
 		$(CXX) Log.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
 %.o: %.cpp
+		$(shell echo "--")
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
 .PHONY install:
