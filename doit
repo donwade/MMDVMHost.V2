@@ -1,0 +1,42 @@
+#!/bin/bash
+reset
+set -x
+make clean &>/dev/null
+NAME=`uname -m`
+
+TGT_ARCH=arm-linux-gnueabihf
+
+if [ "$NAME" == "x86_64" ]; then
+
+    SYSROOT=/home/dwade/remote.root
+
+    [[ -d ${SYSROOT} ]] || mkdir -p ${SYSROOT} 
+    sudo mount whitebox:/ ${SYSROOT}
+
+    export PATH=/home/dwade/x-tools/arm-linux-gnueabihf/bin:$PATH
+
+    export CXX=`which arm-linux-gnueabihf-g++` 
+    export LD=`which arm-linux-gnueeabihf-c++`
+
+    export CFLAGS="--sysroot=${SYSROOT} "
+    
+    export CXXFLAGS=$CFLAGS
+    
+    LDFLAGS="-L${SYSROOT}/usr/lib/gcc/arm-linux-gnueabihf/10 -L${SYSROOT}/usr/lib  -L${SYSROOT}/usr/lib/$TGT_ARCH -Wl,--sysroot=${SYSROOT} --sysroot=${SYSROOT} "
+    #LDFLAGS+="-Wl,--verbose "
+    export LDFLAGS 
+
+    make VERBOSE=1  all | tee make.log
+    ret=${PIPESTATUS[0]}
+    if [ $ret != 0 ]; then
+        exit
+    fi
+    xcp-whitebox .
+else
+    SHELL='/bin/bash -x' make SHELL='/bin/bash -x' -j3
+    if [ $? == 0 ]; then
+        rm *.o
+        ./runit
+    fi
+fi
+
