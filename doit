@@ -1,6 +1,5 @@
 #!/bin/bash
 reset
-set -x
 make clean &>/dev/null
 NAME=`uname -m`
 
@@ -11,7 +10,11 @@ if [ "$NAME" == "x86_64" ]; then
     SYSROOT=/home/dwade/remote.root
 
     [[ -d ${SYSROOT} ]] || mkdir -p ${SYSROOT} 
-    sudo mount whitebox:/ ${SYSROOT}
+    
+    if [ ! -d ${SYSROOT}/lib ]; then
+        echo "need to mount pi root"
+        sudo mount whitebox:/ ${SYSROOT}
+    fi
 
     export PATH=/home/dwade/x-tools/arm-linux-gnueabihf/bin:$PATH
 
@@ -29,9 +32,12 @@ if [ "$NAME" == "x86_64" ]; then
     make VERBOSE=1  all | tee make.log
     ret=${PIPESTATUS[0]}
     if [ $ret != 0 ]; then
+        RED "\nmake failed \n"
         exit
     fi
     xcp-whitebox .
+    rm *.o
+    GREEN "\n make passed local drive cleaned up\n"
 else
     SHELL='/bin/bash -x' make SHELL='/bin/bash -x' -j3
     if [ $? == 0 ]; then
@@ -39,4 +45,6 @@ else
         ./runit
     fi
 fi
+YELLOW "see also make install-service"
+YELLOW "         make uninstall-service"
 
