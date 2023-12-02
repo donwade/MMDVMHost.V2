@@ -2,8 +2,12 @@
 reset
 make clean &>/dev/null
 NAME=`uname -m`
+unset CFLAGS
 
 TGT_ARCH=arm-linux-gnueabihf
+if [ "$1" == "--Debug" ]; then
+    CFLAGS='-O0 -ggdb '
+fi
 
 if [ "$NAME" == "x86_64" ]; then
 
@@ -21,7 +25,7 @@ if [ "$NAME" == "x86_64" ]; then
     export CXX=`which arm-linux-gnueabihf-g++` 
     export LD=`which arm-linux-gnueeabihf-c++`
 
-    export CFLAGS="--sysroot=${SYSROOT} "
+    export CFLAGS=" $CFLAGS --sysroot=${SYSROOT} "
     
     export CXXFLAGS=$CFLAGS
     
@@ -39,12 +43,27 @@ if [ "$NAME" == "x86_64" ]; then
     rm *.o
     GREEN "\n make passed local drive cleaned up\n"
 else
-    SHELL='/bin/bash -x' make SHELL='/bin/bash -x' -j3
+    make CFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" SHELL='/bin/bash -x' -j3
     if [ $? == 0 ]; then
+        runit --stop
+        runit --disable
+        sudo make uninstall-service
+        echo
+        sudo make install
+        sudo make install-service
+        echo
+        ls -al MMDVMHost
+        echo
+        ls -al `which MMDVMHost`
+        echo
+        runit --enable
+        runit --start
         rm *.o
         ./runit
     fi
 fi
 YELLOW "see also make install-service"
 YELLOW "         make uninstall-service"
+echo
+ps -ef | grep -v grep | grep mmdvm*
 
