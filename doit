@@ -44,22 +44,31 @@ if [ "$NAME" == "x86_64" ]; then
     GREEN "\n make passed local drive cleaned up\n"
 else
     make CFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" SHELL='/bin/bash -x' -j3
+
     if [ $? == 0 ]; then
-        runit --stop
-        runit --disable
-        sudo make uninstall-service
-        echo
-        sudo make install
-        sudo make install-service
-        echo
-        ls -al MMDVMHost
-        echo
-        ls -al `which MMDVMHost`
-        echo
-        runit --enable
-        runit --start
-        rm *.o
-        ./runit
+         rm *.o
+         echo
+         ls -al MMDVMHost
+         sudo chmod 775 /var/log/./mmdvm
+         sudo chmod 775 /var/log/mmdvm/*
+         ls -al  /var/log/mmdvm/.
+         ls -al  /var/log/mmdvm/*
+
+#        setup-service --stop
+#        setup-service --disable
+#        sudo make uninstall-service
+#        echo
+#        sudo make install
+#        sudo make install-service
+#        echo
+#        ls -al `which MMDVMHost`
+#        echo
+#        setup-service --enable
+#        setup-service --start
+#        ./setup-service
+        
+    else
+        RED "make failed"
     fi
 fi
 YELLOW "see also make install-service"
