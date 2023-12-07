@@ -1,8 +1,11 @@
 #!/bin/bash
 reset
+set -x
 make clean &>/dev/null
 NAME=`uname -m`
 unset CFLAGS
+MAKE_TARGET=Makefile.Pi.OLED
+set -e
 
 TGT_ARCH=arm-linux-gnueabihf
 if [ "$1" == "--Debug" ]; then
@@ -33,27 +36,32 @@ if [ "$NAME" == "x86_64" ]; then
     #LDFLAGS+="-Wl,--verbose "
     export LDFLAGS 
 
-    make VERBOSE=1  all | tee make.log
+    make -f $MAKE_TARGET VERBOSE=1  all | tee make.log
     ret=${PIPESTATUS[0]}
     if [ $ret != 0 ]; then
         RED "\nmake failed \n"
         exit
     fi
     xcp-whitebox .
-    rm *.o
+    rm *.o || true
+
     GREEN "\n make passed local drive cleaned up\n"
 else
-    make CFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" SHELL='/bin/bash -x' -j3
+     rm *.o || true
+     echo
+     sudo rm -rf /var/log/mmdvm || true
+     sudo mkdir -p  /var/log/mmdvm
+     sudo chmod  777 /var/log/mmdvm
+
+     [[ ! -f /etc/MMDVM.ini ]] || sudo rm  /etc/MMDVM.ini 
+
+     make -f $MAKE_TARGET CFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" SHELL='/bin/bash -x' -j3
 
     if [ $? == 0 ]; then
-         rm *.o
-         echo
-         ls -al MMDVMHost
-         sudo chmod 775 /var/log/./mmdvm
-         sudo chmod 775 /var/log/mmdvm/*
-         ls -al  /var/log/mmdvm/.
-         ls -al  /var/log/mmdvm/*
-
+        sudo make -f $MAKE_TARGET CFLAGS="$CFLAGS" CXXFLAGS="$CFLAGS" SHELL='/bin/bash -x' install 
+        sudo make -f $MAKE_TARGET /etc/MMDVM.ini
+        ls -al MMDVMHost
+        GREEN "make install paseed"
 #        setup-service --stop
 #        setup-service --disable
 #        sudo make uninstall-service
@@ -66,7 +74,6 @@ else
 #        setup-service --enable
 #        setup-service --start
 #        ./setup-service
-        
     else
         RED "make failed"
     fi

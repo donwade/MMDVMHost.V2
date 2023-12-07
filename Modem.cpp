@@ -2219,10 +2219,10 @@ bool CModem::setConfig1()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
+	CUtils::dump(1U, "Response", m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_CONFIG command from the modem");
+		LogError("xReceived a NAK to the SET_CONFIG command from the modem");
 		return false;
 	}
 
@@ -2348,7 +2348,7 @@ bool CModem::setConfig2()
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_CONFIG command from the modem");
+		LogError("yReceived a NAK to the SET_CONFIG command from the modem");
 		return false;
 	}
 
@@ -2399,7 +2399,7 @@ bool CModem::setFrequency()
 	buffer[10U] = (m_txFrequency >> 16) & 0xFFU;
 	buffer[11U] = (m_txFrequency >> 24) & 0xFFU;
 
-	// CUtils::dump(1U, "Written", buffer, len);
+	CUtils::dump(1U, "Written", buffer, len);
 
 	int ret = m_port->write(buffer, len);
 	if (ret != len)
@@ -2420,7 +2420,7 @@ bool CModem::setFrequency()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
+	CUtils::dump(1U, "Response", m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_FREQ command from the modem");
