@@ -34,11 +34,13 @@ void CUtils::dump(int level, const std::string& title, const unsigned char* data
 
 	while (length > 0U) {
 		std::string output;
+		char temp[30U];
 
 		unsigned int bytes = (length > 16U) ? 16U : length;
+		::sprintf(temp, "[%02d] ", bytes);
+		output += temp;
 
 		for (unsigned i = 0U; i < bytes; i++) {
-			char temp[10U];
 			::sprintf(temp, "%02X ", data[offset + i]);
 			output += temp;
 		}
@@ -167,6 +169,6 @@ void CUtils::removeChar(unsigned char * haystack, char needdle)
             haystack[j++] = haystack[i];
 		i++;
 	}
- 
+
     haystack[j] = '\0';
 }

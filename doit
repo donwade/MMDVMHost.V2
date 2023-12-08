@@ -62,6 +62,7 @@ else
         sudo make -f $MAKE_TARGET /etc/MMDVM.ini
         ls -al MMDVMHost
         GREEN "make install paseed"
+        rm *.o
 #        setup-service --stop
 #        setup-service --disable
 #        sudo make uninstall-service

@@ -2198,7 +2198,7 @@ bool CModem::setConfig1()
 
 	buffer[25U] = (unsigned char)m_m17TXHang;
 
-	// CUtils::dump(1U, "Written", buffer, 26U);
+	CUtils::dump(1U, __FUNCTION__ , buffer, 26U);
 
 	int ret = m_port->write(buffer, 26U);
 	if (ret != 26)
@@ -2219,10 +2219,10 @@ bool CModem::setConfig1()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	CUtils::dump(1U, "Response", m_buffer, m_length);
+	CUtils::dump(1U, __FUNCTION__ , m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("xReceived a NAK to the SET_CONFIG command from the modem");
+		LogError("xReceived NAK (line %d) to the SET_CONFIG command from the modem", m_buffer[4] + (m_buffer[5] << 8));
 		return false;
 	}
 
