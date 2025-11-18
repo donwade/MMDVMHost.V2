@@ -19,9 +19,9 @@
 #include "HD44780.h"
 #include "Log.h"
 
-#include <wiringPi.h>
-#include <softPwm.h>
-#include <lcd.h>
+//#include <wiringPi.h>
+//#include <softPwm.h>
+//#include <lcd.h>
 #include <pthread.h>
 
 #include <cstdio>

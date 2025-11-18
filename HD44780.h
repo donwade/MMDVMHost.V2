@@ -25,7 +25,10 @@
 #include <string>
 #include <vector>
 
-#include <mcp23017.h>
+
+#include <LiquidCrystal.h>
+//#include <mcp23017.h>
+
 #include <pcf8574.h>
 
 enum ADAFRUIT_COLOUR {

@@ -22,7 +22,7 @@
 #include "Display.h"
 #include "Defines.h"
 #include "SerialPort.h"
-#include "UDPSocket.h"
+//#include "UDPSocket.h"
 #include "Timer.h"
 #include "Thread.h"
 #include <string>
