@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DStarDefines.h"
+///#include "DStarDefines.h"
 #include "DMRDefines.h"
 ///#include "YSFDefines.h"
 #include "P25Defines.h"
@@ -107,7 +107,6 @@ m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
 m_rxLevel(0.0F),
 m_cwIdTXLevel(0.0F),
-m_dstarTXLevel(0.0F),
 m_dmrTXLevel(0.0F),
 m_p25TXLevel(0.0F),
  m_pocsagTXLevel(0.0F),
@@ -196,19 +195,17 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool p25Enabled, bool pocsagEnabled)
+void CModem::setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled)
 {
-	m_dstarEnabled  = dstarEnabled;
 	m_dmrEnabled    = dmrEnabled;
 	m_p25Enabled    = p25Enabled;
  	m_pocsagEnabled = pocsagEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
-	m_dstarTXLevel  = dstarTXLevel;
 	m_dmrTXLevel    = dmrTXLevel;
 	m_p25TXLevel    = p25TXLevel;
  	m_pocsagTXLevel = pocsagTXLevel;
@@ -909,47 +906,6 @@ unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
 	return n;
 }
 
-bool CModem::hasDStarSpace() const
-{
-	unsigned int space = m_txDStarData.freeSpace() / (DSTAR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
-}
-
-bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
-{
-	assert(data != nullptr);
-	assert(length > 0U);
-
-	unsigned char buffer[50U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-
-	switch (data[0U]) {
-		case TAG_HEADER:
-			buffer[2U] = MMDVM_DSTAR_HEADER;
-			break;
-		case TAG_DATA:
-			buffer[2U] = MMDVM_DSTAR_DATA;
-			break;
-		case TAG_EOT:
-			buffer[2U] = MMDVM_DSTAR_EOT;
-			break;
-		default:
-			CUtils::dump(2U, "Unknown D-Star packet type", data, length);
-			return false;
-	}
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDStarData.addData(&len, 1U);
-	m_txDStarData.addData(buffer, len);
-
-	return true;
-}
-
 bool CModem::hasDMRSpace1() const
 {
 	unsigned int space = m_txDMRData1.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
@@ -1104,35 +1060,6 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 	m_txTransparentData.addData(buffer, len);
 
 	return true;
-}
-
-bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
-{
-	assert(m_port != nullptr);
-	assert(my1 != nullptr);
-	assert(my2 != nullptr);
-	assert(your != nullptr);
-	assert(type != nullptr);
-	assert(reflector != nullptr);
-
-	unsigned char buffer[50U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 33U;
-	buffer[2U] = MMDVM_QSO_INFO;
-
-	buffer[3U] = MODE_DSTAR;
-
-	::memcpy(buffer + 4U,  my1,  DSTAR_LONG_CALLSIGN_LENGTH);
-	::memcpy(buffer + 12U, my2,  DSTAR_SHORT_CALLSIGN_LENGTH);
-
-	::memcpy(buffer + 16U, your, DSTAR_LONG_CALLSIGN_LENGTH);
-
-	::memcpy(buffer + 24U, type, 1U);
-
-	::memcpy(buffer + 25U, reflector, DSTAR_LONG_CALLSIGN_LENGTH);
-
-	return m_port->write(buffer, 33U) != 33;
 }
 
 bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
@@ -1514,7 +1441,6 @@ bool CModem::setConfig1()
 
 	buffer[11U] = 128U;           // Was OscOffset
 
-	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
 
@@ -1614,7 +1540,6 @@ bool CModem::setConfig2()
 	buffer[10U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
 	buffer[11U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
-	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
  	buffer[17U] = 0x00U;

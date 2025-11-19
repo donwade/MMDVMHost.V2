@@ -20,7 +20,6 @@
 #define	Defines_H
 
 const unsigned char MODE_IDLE    = 0U;
-const unsigned char MODE_DSTAR   = 1U;
 const unsigned char MODE_DMR     = 2U;
 const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;

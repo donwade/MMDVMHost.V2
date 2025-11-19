@@ -91,7 +91,6 @@ public:
   float        getModemRFLevel() const;
   float        getModemRXLevel() const;
   float        getModemCWIdTXLevel() const;
-  float        getModemDStarTXLevel() const;
   float        getModemDMRTXLevel() const;
   float        getModemP25TXLevel() const;
   float        getModemNXDNTXLevel() const;
@@ -350,7 +349,6 @@ private:
   float        m_modemRFLevel;
   float        m_modemRXLevel;
   float        m_modemCWIdTXLevel;
-  float        m_modemDStarTXLevel;
   float        m_modemDMRTXLevel;
   float        m_modemP25TXLevel;
   float        m_modemNXDNTXLevel;
@@ -366,18 +364,6 @@ private:
   unsigned short m_transparentRemotePort;
   unsigned short m_transparentLocalPort;
   unsigned int m_transparentSendFrameType;
-
-  bool         m_dstarEnabled;
-  std::string  m_dstarModule;
-  bool         m_dstarSelfOnly;
-  std::vector<std::string> m_dstarBlackList;
-  std::vector<std::string> m_dstarWhiteList;
-  bool         m_dstarAckReply;
-  unsigned int m_dstarAckTime;
-  DSTAR_ACK    m_dstarAckMessage;
-  bool         m_dstarErrorReply;
-  bool         m_dstarRemoteGateway;
-  unsigned int m_dstarModeHang;
 
   bool         m_dmrEnabled;
   DMR_BEACONS  m_dmrBeacons;
@@ -417,15 +403,6 @@ private:
 
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
-
-
-  bool         m_dstarNetworkEnabled;
-  std::string  m_dstarGatewayAddress;
-  unsigned short m_dstarGatewayPort;
-  std::string  m_dstarLocalAddress;
-  unsigned short m_dstarLocalPort;
-  unsigned int m_dstarNetworkModeHang;
-  bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
   std::string  m_dmrNetworkType;

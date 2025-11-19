@@ -99,42 +99,6 @@ void CDisplay::setQuit()
 	setQuitInt();
 }
 
-void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
-{
-	assert(my1 != nullptr);
-	assert(my2 != nullptr);
-	assert(your != nullptr);
-	assert(type != nullptr);
-	assert(reflector != nullptr);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	writeDStarInt(my1, my2, your, type, reflector);
-}
-
-void CDisplay::writeDStarRSSI(unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeDStarRSSIInt(rssi);
-}
-
-void CDisplay::writeDStarBER(float ber)
-{
-	writeDStarBERInt(ber);
-}
-
-void CDisplay::clearDStar()
-{
-	if (m_timer1.hasExpired()) {
-		clearDStarInt();
-		m_timer1.stop();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_mode1 = MODE_DSTAR;
-	}
-}
-
 void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != nullptr);
@@ -280,11 +244,6 @@ void CDisplay::clock(unsigned int ms)
 	m_timer1.clock(ms);
 	if (m_timer1.isRunning() && m_timer1.hasExpired()) {
 		switch (m_mode1) {
-		case MODE_DSTAR:
-			clearDStarInt();
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
 		case MODE_DMR:
 			clearDMRInt(1U);
 			m_mode1 = MODE_IDLE;
@@ -324,14 +283,6 @@ void CDisplay::clock(unsigned int ms)
 }
 
 void CDisplay::clockInt(unsigned int ms)
-{
-}
-
-void CDisplay::writeDStarRSSIInt(unsigned char rssi)
-{
-}
-
-void CDisplay::writeDStarBERInt(float ber)
 {
 }
 

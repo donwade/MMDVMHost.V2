@@ -41,8 +41,6 @@ protected:
 	virtual void setErrorInt(const char* text);
 	virtual void setLockoutInt();
 	virtual void setQuitInt();
-	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-	virtual void clearDStarInt();
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	virtual void clearDMRInt(unsigned int slotNo);

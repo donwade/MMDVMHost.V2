@@ -188,38 +188,6 @@ void CTFTSurenoo::setQuitInt()
 	m_mode = MODE_QUIT;
 }
 
-void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
-{
-	assert(my1 != nullptr);
-	assert(my2 != nullptr);
-	assert(your != nullptr);
-	assert(type != nullptr);
-	assert(reflector != nullptr);
-
-	setModeLine(STR_MMDVM);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s %s/%s", type, my1, my2);
-	setStatusLine(statusLineNo(0), m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s", your);
-	setStatusLine(statusLineNo(1), m_temp);
-
-	if (::strcmp(reflector, "        ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "via %s", reflector);
-	else
-		::strcpy(m_temp, "");
-	setStatusLine(statusLineNo(2), m_temp);
-
-	m_mode = MODE_DSTAR;
-}
-
-void CTFTSurenoo::clearDStarInt()
-{
-	setStatusLine(statusLineNo(0), "Listening");
-	for (int i = 1; i < STATUS_LINES; i++)
-		setStatusLine(statusLineNo(i), "");
-}
-
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != nullptr);
@@ -295,7 +263,6 @@ void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest,
 
 void CTFTSurenoo::clearP25Int()
 {
-	clearDStarInt();
 }
 
 

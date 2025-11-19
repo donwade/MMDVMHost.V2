@@ -22,9 +22,9 @@
 #include "RemoteControl.h"
 #include "POCSAGNetwork.h"
 #include "POCSAGControl.h"
-#include "DStarNetwork.h"
+///#include "DStarNetwork.h"
 ///#include "NXDNNetwork.h"
-#include "DStarControl.h"
+///#include "DStarControl.h"
 #include "DMRControl.h"
 ///#include "YSFControl.h"
 #include "P25Control.h"
@@ -58,20 +58,16 @@ public:
 private:
   CConf           m_conf;
   CModem*         m_modem;
-  CDStarControl*  m_dstar;
   CDMRControl*    m_dmr;
   CP25Control*    m_p25;
   CPOCSAGControl* m_pocsag;
-  CDStarNetwork*  m_dstarNetwork;
   IDMRNetwork*    m_dmrNetwork;
   CP25Network*    m_p25Network;
   CPOCSAGNetwork* m_pocsagNetwork;
   CDisplay*       m_display;
   unsigned char   m_mode;
-  unsigned int    m_dstarRFModeHang;
   unsigned int    m_dmrRFModeHang;
   unsigned int    m_p25RFModeHang;
-  unsigned int    m_dstarNetModeHang;
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_p25NetModeHang;
   unsigned int    m_pocsagNetModeHang;
@@ -81,7 +77,6 @@ private:
   CTimer          m_cwIdTimer;
   bool            m_duplex;
   unsigned int    m_timeout;
-  bool            m_dstarEnabled;
   bool            m_dmrEnabled;
   bool            m_p25Enabled;
   bool            m_pocsagEnabled;

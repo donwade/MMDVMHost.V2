@@ -47,8 +47,8 @@ public:
 
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+	void setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
@@ -102,7 +102,6 @@ public:
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
 	bool writeFMData(const unsigned char* data, unsigned int length);
 
-	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
@@ -143,7 +142,6 @@ private:
 	unsigned int               m_dmrDelay;
 	float                      m_rxLevel;
 	float                      m_cwIdTXLevel;
-	float                      m_dstarTXLevel;
 	float                      m_dmrTXLevel;
 	float                      m_p25TXLevel;
 	float                      m_pocsagTXLevel;

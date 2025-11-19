@@ -254,64 +254,6 @@ void CLCDproc::setQuitInt()
 	m_dmr = false;
 }
 
-void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
-{
-	assert(my1 != nullptr);
-	assert(my2 != nullptr);
-	assert(your != nullptr);
-	assert(type != nullptr);
-	assert(reflector != nullptr);
-
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	socketPrintf(m_socketfd, "screen_set DStar -priority foreground");
-	socketPrintf(m_socketfd, "widget_set DStar Mode 1 1 \"D-Star\"");
-
-	::sprintf(m_displayBuffer1, "%.8s", your);
-
-	char *p = m_displayBuffer1;
-	for (; *p; ++p) {
-		if (*p == ' ')
-			*p = '_';
-	}
-
-	if (strcmp(reflector, "        ") != 0)
-		sprintf(m_displayBuffer2, " via %.8s", reflector);
-	else
-		memset(m_displayBuffer2, 0, BUFFER_MAX_LEN);
-
-	if (m_rows == 2U) {
-		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s to %s%s\"", m_cols - 1, my1, my2, m_displayBuffer1, m_displayBuffer2);
-	} else {
-		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s\"", m_cols - 1, my1, my2);
-		socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, m_displayBuffer1, m_displayBuffer2);
-		socketPrintf(m_socketfd, "output 128"); // Set LED4 color red
-	}
-
-	m_dmr = false;
-	m_rssiCount1 = 0U;
-}
-
-void CLCDproc::writeDStarRSSIInt(unsigned char rssi)
-{
-	if (m_rssiCount1 == 0U) {
-		socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
-	}
- 
-	m_rssiCount1++;
- 	if (m_rssiCount1 >= DSTAR_RSSI_COUNT)
- 		m_rssiCount1 = 0U;
-}
-
-void CLCDproc::clearDStarInt()
-{
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 15 2 h 3 \"Listening\"");
-	socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 15 3 h 3 \"\"");
-	socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 8"); // Set LED4 color green
-}
 
 // LED 1 Green 1 Red 16 Yellow 17
 

@@ -89,11 +89,6 @@ protected:
 	virtual void setErrorInt(const char* text) = 0;
 	virtual void setQuitInt() = 0;
 
-	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
-	virtual void writeDStarRSSIInt(unsigned char rssi);
-	virtual void writeDStarBERInt(float ber);
-	virtual void clearDStarInt() = 0;
-
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
 	virtual int  writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);

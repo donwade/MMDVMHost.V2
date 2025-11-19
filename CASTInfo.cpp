@@ -74,16 +74,6 @@ void CCASTInfo::setQuitInt()
 {
 }
 
-void CCASTInfo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
-{
-   if (m_modem != nullptr)
-        m_modem->writeDStarInfo(my1, my2, your, type, reflector);
-}
-
-void CCASTInfo::clearDStarInt()
-{
-}
-
 void CCASTInfo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
    if (m_modem != nullptr)

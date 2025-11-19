@@ -16,7 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DStarDefines.h"
+///#include "DStarDefines.h"
+#include "Defines.h"
 #include "Conf.h"
 #include "Log.h"
 
@@ -108,7 +109,6 @@ m_modemTXDCOffset(0),
 m_modemRFLevel(100.0F),
 m_modemRXLevel(50.0F),
 m_modemCWIdTXLevel(50.0F),
-m_modemDStarTXLevel(50.0F),
 m_modemDMRTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
@@ -123,17 +123,6 @@ m_transparentRemoteAddress(),
 m_transparentRemotePort(0U),
 m_transparentLocalPort(0U),
 m_transparentSendFrameType(0U),
-m_dstarEnabled(false),
-m_dstarModule("C"),
-m_dstarSelfOnly(false),
-m_dstarBlackList(),
-m_dstarWhiteList(),
-m_dstarAckReply(true),
-m_dstarAckTime(750U),
-m_dstarAckMessage(DSTAR_ACK::BER),
-m_dstarErrorReply(true),
-m_dstarRemoteGateway(false),
-m_dstarModeHang(10U),
 m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS::OFF),
 m_dmrBeaconInterval(60U),
@@ -169,13 +158,6 @@ m_p25TXHang(5U),
 m_p25ModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
-m_dstarNetworkEnabled(false),
-m_dstarGatewayAddress(),
-m_dstarGatewayPort(0U),
-m_dstarLocalAddress(),
-m_dstarLocalPort(0U),
-m_dstarNetworkModeHang(3U),
-m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
 m_dmrNetworkType("Gateway"),
 m_dmrNetworkRemoteAddress(),
@@ -374,12 +356,12 @@ bool CConf::read()
 			else if (::strcmp(key, "Duplex") == 0)
 				m_duplex = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_p25NetworkModeHang = 
-				m_dstarModeHang        = m_dmrModeHang        = m_p25ModeHang        = (unsigned int)::atoi(value);
+				m_dmrNetworkModeHang = m_p25NetworkModeHang = 
+				m_dmrModeHang      = m_p25ModeHang        = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RFModeHang") == 0)
-				m_dstarModeHang = m_dmrModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
+				m_dmrModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NetModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
+				m_dmrNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Display") == 0)
 				m_display = value;
 			else if (::strcmp(key, "Daemon") == 0)
@@ -472,11 +454,9 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
-			else if (::strcmp(key, "D-StarTXLevel") == 0)
-				m_modemDStarTXLevel = float(::atof(value));
 			else if (::strcmp(key, "DMRTXLevel") == 0)
 				m_modemDMRTXLevel = float(::atof(value));
 			else if (::strcmp(key, "P25TXLevel") == 0)
@@ -506,54 +486,6 @@ bool CConf::read()
 				m_transparentLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "SendFrameType") == 0)
 				m_transparentSendFrameType = (unsigned int)::atoi(value);
-		} else if (section == SECTION::DSTAR) {
-			if (::strcmp(key, "Enable") == 0)
-				m_dstarEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Module") == 0) {
-				// Convert the module to upper case
-				for (unsigned int i = 0U; value[i] != 0; i++)
-					value[i] = ::toupper(value[i]);
-				m_dstarModule = value;
-			} else if (::strcmp(key, "SelfOnly") == 0)
-				m_dstarSelfOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "BlackList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					if (::strlen(p) > 0U) {
-						for (unsigned int i = 0U; p[i] != 0; i++)
-							p[i] = ::toupper(p[i]);
-						std::string callsign = std::string(p);
-						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
-						m_dstarBlackList.push_back(callsign);
-					}
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "WhiteList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					if (::strlen(p) > 0U) {
-						for (unsigned int i = 0U; p[i] != 0; i++)
-							p[i] = ::toupper(p[i]);
-						std::string callsign = std::string(p);
-						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
-						m_dstarWhiteList.push_back(callsign);
-					}
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "AckReply") == 0)
-				m_dstarAckReply = ::atoi(value) == 1;
-			else if (::strcmp(key, "AckTime") == 0)
-				m_dstarAckTime = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "AckMessage") == 0) {
-				m_dstarAckMessage = DSTAR_ACK(::atoi(value));
-				if ((m_dstarAckMessage != DSTAR_ACK::BER) && (m_dstarAckMessage != DSTAR_ACK::RSSI) && (m_dstarAckMessage != DSTAR_ACK::SMETER))
-					m_dstarAckMessage = DSTAR_ACK::BER;
-			} else if (::strcmp(key, "ErrorReply") == 0)
-				m_dstarErrorReply = ::atoi(value) == 1;
-			else if (::strcmp(key, "RemoteGateway") == 0)
-				m_dstarRemoteGateway = ::atoi(value) == 1;
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_dstarModeHang = (unsigned int)::atoi(value);
 		} else if (section == SECTION::DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
@@ -675,21 +607,6 @@ bool CConf::read()
 				m_pocsagEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Frequency") == 0)
 				m_pocsagFrequency = (unsigned int)::atoi(value);
-		} else if (section == SECTION::DSTAR_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_dstarNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "GatewayAddress") == 0)
-				m_dstarGatewayAddress = value;
-			else if (::strcmp(key, "GatewayPort") == 0)
-				m_dstarGatewayPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_dstarLocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_dstarLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_dstarNetworkModeHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Debug") == 0)
-				m_dstarNetworkDebug = ::atoi(value) == 1;
 		} else if (section == SECTION::DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
@@ -1089,11 +1006,6 @@ float CConf::getModemCWIdTXLevel() const
 	return m_modemCWIdTXLevel;
 }
 
-float CConf::getModemDStarTXLevel() const
-{
-	return m_modemDStarTXLevel;
-}
-
 float CConf::getModemDMRTXLevel() const
 {
 	return m_modemDMRTXLevel;
@@ -1162,61 +1074,6 @@ unsigned short CConf::getTransparentLocalPort() const
 unsigned int CConf::getTransparentSendFrameType() const
 {
 	return m_transparentSendFrameType;
-}
-
-bool CConf::getDStarEnabled() const
-{
-	return m_dstarEnabled;
-}
-
-std::string CConf::getDStarModule() const
-{
-	return m_dstarModule;
-}
-
-bool CConf::getDStarSelfOnly() const
-{
-	return m_dstarSelfOnly;
-}
-
-std::vector<std::string> CConf::getDStarBlackList() const
-{
-	return m_dstarBlackList;
-}
-
-std::vector<std::string> CConf::getDStarWhiteList() const
-{
-        return m_dstarWhiteList;
-}
-
-bool CConf::getDStarAckReply() const
-{
-	return m_dstarAckReply;
-}
-
-unsigned int CConf::getDStarAckTime() const
-{
-	return m_dstarAckTime;
-}
-
-DSTAR_ACK CConf::getDStarAckMessage() const
-{
-	return m_dstarAckMessage;
-}
-
-bool CConf::getDStarErrorReply() const
-{
-	return m_dstarErrorReply;
-}
-
-bool CConf::getDStarRemoteGateway() const
-{
-	return m_dstarRemoteGateway;
-}
-
-unsigned int CConf::getDStarModeHang() const
-{
-	return m_dstarModeHang;
 }
 
 bool CConf::getDMREnabled() const
@@ -1392,41 +1249,6 @@ bool CConf::getPOCSAGEnabled() const
 unsigned int CConf::getPOCSAGFrequency() const
 {
 	return m_pocsagFrequency;
-}
-
-bool CConf::getDStarNetworkEnabled() const
-{
-	return m_dstarNetworkEnabled;
-}
-
-std::string CConf::getDStarGatewayAddress() const
-{
-	return m_dstarGatewayAddress;
-}
-
-unsigned short CConf::getDStarGatewayPort() const
-{
-	return m_dstarGatewayPort;
-}
-
-std::string CConf::getDStarLocalAddress() const
-{
-	return m_dstarLocalAddress;
-}
-
-unsigned short CConf::getDStarLocalPort() const
-{
-	return m_dstarLocalPort;
-}
-
-unsigned int CConf::getDStarNetworkModeHang() const
-{
-	return m_dstarNetworkModeHang;
-}
-
-bool CConf::getDStarNetworkDebug() const
-{
-	return m_dstarNetworkDebug;
 }
 
 bool CConf::getDMRNetworkEnabled() const

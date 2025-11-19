@@ -11,7 +11,7 @@ LDFLAGS = -g -L/usr/local/lib
 OBJECTS = \
 		AMBEFEC.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o \
 		DMRDirectNetwork.o DMREMB.o DMREmbeddedData.o DMRFullLC.o DMRGatewayNetwork.o DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o \
-		DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o DStarSlowData.o Golay2087.o Golay24128.o \
+		DMRAccessControl.o DMRTA.o DMRTrellis.o Golay2087.o Golay24128.o \
 		Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o MMDVMHost.o \
 		Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o  NullController.o NullDisplay.o  \
 		  \
