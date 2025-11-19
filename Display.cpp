@@ -227,41 +227,6 @@ void CDisplay::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CDisplay::writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
-{
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-	assert(origin != nullptr);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	writeFusionInt(source, dest, dgid, type, origin);
-}
-
-void CDisplay::writeFusionRSSI(unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeFusionRSSIInt(rssi);
-}
-
-void CDisplay::writeFusionBER(float ber)
-{
-	writeFusionBERInt(ber);
-}
-
-void CDisplay::clearFusion()
-{
-	if (m_timer1.hasExpired()) {
-		clearFusionInt();
-		m_timer1.stop();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_mode1 = MODE_YSF;
-	}
-}
-
 void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != nullptr);
@@ -381,11 +346,6 @@ void CDisplay::clock(unsigned int ms)
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;
-		case MODE_YSF:
-			clearFusionInt();
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
 		case MODE_P25:
 			clearP25Int();
 			m_mode1 = MODE_IDLE;
@@ -459,14 +419,6 @@ void CDisplay::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAli
 }
 
 void CDisplay::writeDMRBERInt(unsigned int slotNo, float ber)
-{
-}
-
-void CDisplay::writeFusionRSSIInt(unsigned char rssi)
-{
-}
-
-void CDisplay::writeFusionBERInt(float ber)
 {
 }
 

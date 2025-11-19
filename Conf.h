@@ -93,7 +93,6 @@ public:
   float        getModemCWIdTXLevel() const;
   float        getModemDStarTXLevel() const;
   float        getModemDMRTXLevel() const;
-  float        getModemYSFTXLevel() const;
   float        getModemP25TXLevel() const;
   float        getModemNXDNTXLevel() const;
   float        getModemPOCSAGTXLevel() const;
@@ -375,9 +374,6 @@ private:
   std::string  m_dmrIdLookupFile;
   unsigned int m_dmrIdLookupTime;
 
-  std::string  m_nxdnIdLookupFile;
-  unsigned int m_nxdnIdLookupTime;
-
   std::string  m_modemProtocol;
   std::string  m_modemUARTPort;
   unsigned int m_modemUARTSpeed;
@@ -401,7 +397,6 @@ private:
   float        m_modemCWIdTXLevel;
   float        m_modemDStarTXLevel;
   float        m_modemDMRTXLevel;
-  float        m_modemYSFTXLevel;
   float        m_modemP25TXLevel;
   float        m_modemNXDNTXLevel;
   float        m_modemPOCSAGTXLevel;
@@ -464,14 +459,6 @@ private:
   bool         m_p25RemoteGateway;
   unsigned int m_p25TXHang;
   unsigned int m_p25ModeHang;
-
-  bool         m_nxdnEnabled;
-  unsigned int m_nxdnId;
-  unsigned int m_nxdnRAN;
-  bool         m_nxdnSelfOnly;
-  bool         m_nxdnRemoteGateway;
-  unsigned int m_nxdnTXHang;
-  unsigned int m_nxdnModeHang;
 
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
@@ -550,15 +537,6 @@ private:
   unsigned short m_p25LocalPort;
   unsigned int m_p25NetworkModeHang;
   bool         m_p25NetworkDebug;
-
-  bool         m_nxdnNetworkEnabled;
-  std::string  m_nxdnNetworkProtocol;
-  std::string  m_nxdnGatewayAddress;
-  unsigned short m_nxdnGatewayPort;
-  std::string  m_nxdnLocalAddress;
-  unsigned short m_nxdnLocalPort;
-  unsigned int m_nxdnNetworkModeHang;
-  bool         m_nxdnNetworkDebug;
 
   bool         m_pocsagNetworkEnabled;
   std::string  m_pocsagGatewayAddress;

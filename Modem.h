@@ -47,8 +47,8 @@ public:
 
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool p25Enabled, bool pocsagEnabled, bool fmEnabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
@@ -137,11 +137,8 @@ public:
 private:
 	unsigned int               m_protocolVersion;
 	unsigned int               m_dmrColorCode;
-	bool                       m_ysfLoDev;
-	unsigned int               m_ysfTXHang;
 	unsigned int               m_p25TXHang;
-	unsigned int               m_nxdnTXHang;
-	bool                       m_duplex;
+ 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
 	bool                       m_pttInvert;
@@ -151,9 +148,7 @@ private:
 	float                      m_cwIdTXLevel;
 	float                      m_dstarTXLevel;
 	float                      m_dmrTXLevel;
-	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
-	float                      m_nxdnTXLevel;
 	float                      m_pocsagTXLevel;
 	float                      m_fmTXLevel;
 	float                      m_rfLevel;
@@ -165,9 +160,7 @@ private:
 	unsigned int               m_pocsagFrequency;
 	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
-	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
-	bool                       m_nxdnEnabled;
 	bool                       m_pocsagEnabled;
 	bool                       m_fmEnabled;
 	int                        m_rxDCOffset;
@@ -204,9 +197,7 @@ private:
 	unsigned int               m_dstarSpace;
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
-	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
-	unsigned int               m_nxdnSpace;
 	unsigned int               m_pocsagSpace;
 	unsigned int               m_fmSpace;
 	bool                       m_tx;

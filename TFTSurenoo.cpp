@@ -287,35 +287,6 @@ void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
-{
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-	assert(origin != nullptr);
-
-	setModeLine(STR_YSF);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
-	setStatusLine(statusLineNo(0), m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "DG-ID %u", dgid);
-	setStatusLine(statusLineNo(1), m_temp);
-
-	if (::strcmp(origin, "          ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "at %s", origin);
-	else
-		::strcpy(m_temp, "");
-	setStatusLine(statusLineNo(2), m_temp);
-
-	m_mode = MODE_YSF;
-}
-
-void CTFTSurenoo::clearFusionInt()
-{
-	clearDStarInt();
-}
-
 void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != nullptr);

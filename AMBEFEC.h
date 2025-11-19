@@ -28,8 +28,6 @@ public:
 
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 
-	unsigned int regenerateYSFDN(unsigned char* bytes) const;
-
 	unsigned int regenerateIMBE(unsigned char* bytes) const;
 
 private:

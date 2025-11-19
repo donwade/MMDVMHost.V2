@@ -20,9 +20,9 @@
 
 #include "DStarDefines.h"
 #include "DMRDefines.h"
-#include "YSFDefines.h"
+///#include "YSFDefines.h"
 #include "P25Defines.h"
-#include "NXDNDefines.h"
+///#include "NXDNDefines.h"
 
 #include <cstdio>
 #include <cassert>
@@ -62,13 +62,6 @@ void CSync::addDMRAudioSync(unsigned char* data, bool duplex)
 	}
 }
 
-void CSync::addYSFSync(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	::memcpy(data, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
-}
-
 void CSync::addP25Sync(unsigned char* data)
 {
 	assert(data != nullptr);
@@ -76,10 +69,4 @@ void CSync::addP25Sync(unsigned char* data)
 	::memcpy(data, P25_SYNC_BYTES, P25_SYNC_LENGTH_BYTES);
 }
 
-void CSync::addNXDNSync(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	for (unsigned int i = 0U; i < NXDN_FSW_BYTES_LENGTH; i++)
-		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
-}
+ 

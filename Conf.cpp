@@ -87,8 +87,6 @@ m_cwIdTime(10U),
 m_cwIdCallsign(),
 m_dmrIdLookupFile(),
 m_dmrIdLookupTime(0U),
-m_nxdnIdLookupFile(),
-m_nxdnIdLookupTime(0U),
 m_modemProtocol("uart"),
 m_modemUARTPort(),
 m_modemUARTSpeed(115200U),
@@ -112,7 +110,6 @@ m_modemRXLevel(50.0F),
 m_modemCWIdTXLevel(50.0F),
 m_modemDStarTXLevel(50.0F),
 m_modemDMRTXLevel(50.0F),
-m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
@@ -170,13 +167,6 @@ m_p25OverrideUID(false),
 m_p25RemoteGateway(false),
 m_p25TXHang(5U),
 m_p25ModeHang(10U),
-m_nxdnEnabled(false),
-m_nxdnId(0U),
-m_nxdnRAN(1U),
-m_nxdnSelfOnly(false),
-m_nxdnRemoteGateway(false),
-m_nxdnTXHang(5U),
-m_nxdnModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
 m_fmEnabled(false),
@@ -249,14 +239,6 @@ m_p25LocalAddress(),
 m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
-m_nxdnNetworkEnabled(false),
-m_nxdnNetworkProtocol("Icom"),
-m_nxdnGatewayAddress(),
-m_nxdnGatewayPort(0U),
-m_nxdnLocalAddress(),
-m_nxdnLocalPort(0U),
-m_nxdnNetworkModeHang(3U),
-m_nxdnNetworkDebug(false),
 m_pocsagNetworkEnabled(false),
 m_pocsagGatewayAddress(),
 m_pocsagGatewayPort(0U),
@@ -442,12 +424,12 @@ bool CConf::read()
 			else if (::strcmp(key, "Duplex") == 0)
 				m_duplex = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_fmNetworkModeHang = 
-				m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = m_nxdnModeHang        = m_fmModeHang        = (unsigned int)::atoi(value);
+				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_p25NetworkModeHang = m_fmNetworkModeHang = 
+				m_dstarModeHang        = m_dmrModeHang        = m_p25ModeHang        = m_fmModeHang        = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RFModeHang") == 0)
-				m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_fmModeHang = (unsigned int)::atoi(value);
+				m_dstarModeHang = m_dmrModeHang = m_p25ModeHang = m_fmModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NetModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
+				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_p25NetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Display") == 0)
 				m_display = value;
 			else if (::strcmp(key, "Daemon") == 0)
@@ -498,11 +480,6 @@ bool CConf::read()
 				m_dmrIdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
 				m_dmrIdLookupTime = (unsigned int)::atoi(value);
-		} else if (section == SECTION::NXDNID_LOOKUP) {
-			if (::strcmp(key, "File") == 0)
-				m_nxdnIdLookupFile = value;
-			else if (::strcmp(key, "Time") == 0)
-				m_nxdnIdLookupTime = (unsigned int)::atoi(value);
 		} else if (section == SECTION::MODEM) {
 			if (::strcmp(key, "Protocol") == 0)
 				m_modemProtocol = value;
@@ -545,15 +522,13 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
 			else if (::strcmp(key, "D-StarTXLevel") == 0)
 				m_modemDStarTXLevel = float(::atof(value));
 			else if (::strcmp(key, "DMRTXLevel") == 0)
 				m_modemDMRTXLevel = float(::atof(value));
-			else if (::strcmp(key, "YSFTXLevel") == 0)
-				m_modemYSFTXLevel = float(::atof(value));
 			else if (::strcmp(key, "P25TXLevel") == 0)
 				m_modemP25TXLevel = float(::atof(value));
 			else if (::strcmp(key, "NXDNTXLevel") == 0)
@@ -745,21 +720,6 @@ bool CConf::read()
 				m_p25TXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_p25ModeHang = (unsigned int)::atoi(value);
-		} else if (section == SECTION::NXDN) {
-			if (::strcmp(key, "Enable") == 0)
-				m_nxdnEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Id") == 0)
-				m_nxdnId = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "RAN") == 0)
-				m_nxdnRAN = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SelfOnly") == 0)
-				m_nxdnSelfOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "RemoteGateway") == 0)
-				m_nxdnRemoteGateway = ::atoi(value) == 1;
-			else if (::strcmp(key, "TXHang") == 0)
-				m_nxdnTXHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_nxdnModeHang = (unsigned int)::atoi(value);
 		} else if (section == SECTION::POCSAG) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagEnabled = ::atoi(value) == 1;
@@ -923,23 +883,6 @@ bool CConf::read()
 				m_p25NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_p25NetworkDebug = ::atoi(value) == 1;
-		} else if (section == SECTION::NXDN_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_nxdnNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Protocol") == 0)
-				m_nxdnNetworkProtocol = value;
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_nxdnLocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_nxdnLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "GatewayAddress") == 0)
-				m_nxdnGatewayAddress = value;
-			else if (::strcmp(key, "GatewayPort") == 0)
-				m_nxdnGatewayPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Debug") == 0)
-				m_nxdnNetworkDebug = ::atoi(value) == 1;
 		} else if (section == SECTION::POCSAG_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagNetworkEnabled = ::atoi(value) == 1;
@@ -1206,16 +1149,6 @@ unsigned int CConf::getDMRIdLookupTime() const
 	return m_dmrIdLookupTime;
 }
 
-std::string CConf::getNXDNIdLookupFile() const
-{
-	return m_nxdnIdLookupFile;
-}
-
-unsigned int CConf::getNXDNIdLookupTime() const
-{
-	return m_nxdnIdLookupTime;
-}
-
 std::string CConf::getModemProtocol() const
 {
 	return m_modemProtocol;
@@ -1329,11 +1262,6 @@ float CConf::getModemDStarTXLevel() const
 float CConf::getModemDMRTXLevel() const
 {
 	return m_modemDMRTXLevel;
-}
-
-float CConf::getModemYSFTXLevel() const
-{
-	return m_modemYSFTXLevel;
 }
 
 float CConf::getModemP25TXLevel() const
@@ -1619,41 +1547,6 @@ unsigned int CConf::getP25TXHang() const
 unsigned int CConf::getP25ModeHang() const
 {
 	return m_p25ModeHang;
-}
-
-bool CConf::getNXDNEnabled() const
-{
-	return m_nxdnEnabled;
-}
-
-unsigned int CConf::getNXDNId() const
-{
-	return m_nxdnId;
-}
-
-unsigned int CConf::getNXDNRAN() const
-{
-	return m_nxdnRAN;
-}
-
-bool CConf::getNXDNSelfOnly() const
-{
-	return m_nxdnSelfOnly;
-}
-
-bool CConf::getNXDNRemoteGateway() const
-{
-	return m_nxdnRemoteGateway;
-}
-
-unsigned int CConf::getNXDNTXHang() const
-{
-	return m_nxdnTXHang;
-}
-
-unsigned int CConf::getNXDNModeHang() const
-{
-	return m_nxdnModeHang;
 }
 
 bool CConf::getPOCSAGEnabled() const
@@ -2014,46 +1907,6 @@ unsigned int CConf::getP25NetworkModeHang() const
 bool CConf::getP25NetworkDebug() const
 {
 	return m_p25NetworkDebug;
-}
-
-bool CConf::getNXDNNetworkEnabled() const
-{
-	return m_nxdnNetworkEnabled;
-}
-
-std::string CConf::getNXDNNetworkProtocol() const
-{
-	return m_nxdnNetworkProtocol;
-}
-
-std::string CConf::getNXDNGatewayAddress() const
-{
-	return m_nxdnGatewayAddress;
-}
-
-unsigned short CConf::getNXDNGatewayPort() const
-{
-	return m_nxdnGatewayPort;
-}
-
-std::string CConf::getNXDNLocalAddress() const
-{
-	return m_nxdnLocalAddress;
-}
-
-unsigned short CConf::getNXDNLocalPort() const
-{
-	return m_nxdnLocalPort;
-}
-
-unsigned int CConf::getNXDNNetworkModeHang() const
-{
-	return m_nxdnNetworkModeHang;
-}
-
-bool CConf::getNXDNNetworkDebug() const
-{
-	return m_nxdnNetworkDebug;
 }
 
 bool CConf::getPOCSAGNetworkEnabled() const

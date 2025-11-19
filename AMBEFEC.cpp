@@ -606,56 +606,6 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
-{
-	assert(bytes != nullptr);
-
-	unsigned int a = 0U;
-	unsigned int MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
-		unsigned int aPos = DMR_A_TABLE[i];
-		if (READ_BIT(bytes, aPos))
-			a |= MASK;
-	}
-
-	unsigned int b = 0U;
-	MASK = 0x400000U;
-	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
-		unsigned int bPos = DMR_B_TABLE[i];
-		if (READ_BIT(bytes, bPos))
-			b |= MASK;
-	}
-
-	unsigned int c = 0U;
-	MASK = 0x1000000U;
-	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
-		unsigned int cPos = DMR_C_TABLE[i];
-		if (READ_BIT(bytes, cPos))
-			c |= MASK;
-	}
-
-	unsigned int errors = regenerateDMR(a, b, c);
-
-	MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
-		unsigned int aPos = DMR_A_TABLE[i];
-		WRITE_BIT(bytes, aPos, a & MASK);
-	}
-
-	MASK = 0x400000U;
-	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
-		unsigned int bPos = DMR_B_TABLE[i];
-		WRITE_BIT(bytes, bPos, b & MASK);
-	}
-
-	MASK = 0x1000000U;
-	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
-		unsigned int cPos = DMR_C_TABLE[i];
-		WRITE_BIT(bytes, cPos, c & MASK);
-	}
-
-	return errors;
-}
 
 unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 {
