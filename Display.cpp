@@ -24,7 +24,6 @@
 #include "TFTSurenoo.h"
 #include "UDPSocket.h"
 #include "LCDproc.h"
-#include "Nextion.h"
 #include "CASTInfo.h"
 #include "Conf.h"
 #include "Modem.h"
@@ -260,50 +259,6 @@ void CDisplay::clearP25()
 	}
 }
 
-void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(type != nullptr);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	writeNXDNInt(source, group, dest, type);
-}
-
-void CDisplay::writeNXDN(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
-{
-	assert(type != nullptr);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	if (writeNXDNIntEx(source, group, dest, type))
-		writeNXDNInt(source.get(keyCALLSIGN).c_str(), group, dest, type);
-}
-
-void CDisplay::writeNXDNRSSI(unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeNXDNRSSIInt(rssi);
-}
-
-void CDisplay::writeNXDNBER(float ber)
-{
-	writeNXDNBERInt(ber);
-}
-
-void CDisplay::clearNXDN()
-{
-	if (m_timer1.hasExpired()) {
-		clearNXDNInt();
-		m_timer1.stop();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_mode1 = MODE_NXDN;
-	}
-}
-
 void CDisplay::writePOCSAG(uint32_t ric, const std::string& message)
 {
 	m_timer1.start();
@@ -348,11 +303,6 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_P25:
 			clearP25Int();
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
-		case MODE_NXDN:
-			clearNXDNInt();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;
@@ -430,21 +380,6 @@ void CDisplay::writeP25BERInt(float ber)
 {
 }
 
-void CDisplay::writeNXDNRSSIInt(unsigned char rssi)
-{
-}
-
-void CDisplay::writeNXDNBERInt(float ber)
-{
-}
-
-int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
-{
-	/* return value definition is same as writeDMRIntEx() */
-	return -1;	// not supported
-}
-
-	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
 CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 {
@@ -472,83 +407,8 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 			serial = new CUARTController(port, 115200U);
 
 		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex(), screenLayout);
-	} else if (type == "Nextion") {
-		std::string port            = conf.getNextionPort();
-		unsigned int brightness     = conf.getNextionBrightness();
-		bool displayClock           = conf.getNextionDisplayClock();
-		bool utc                    = conf.getNextionUTC();
-		unsigned int idleBrightness = conf.getNextionIdleBrightness();
-		unsigned int screenLayout   = conf.getNextionScreenLayout();
-		unsigned int txFrequency    = conf.getTXFrequency();
-		unsigned int rxFrequency    = conf.getRXFrequency();
-		bool displayTempInF         = conf.getNextionTempInFahrenheit();
-
-		LogInfo("    Port: %s", port.c_str());
-		LogInfo("    Brightness: %u", brightness);
-		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
-		if (displayClock)
-			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
-		LogInfo("    Idle Brightness: %u", idleBrightness);
-		LogInfo("    Temperature in Fahrenheit: %s ", displayTempInF ? "yes" : "no");
- 
-		switch (screenLayout) {
-		case 0U:
-			LogInfo("    Screen Layout: G4KLX (Default)");
-			break;
-		case 2U:
-			LogInfo("    Screen Layout: ON7LDS");
-			break;
-		case 3U:
-			LogInfo("    Screen Layout: DIY by ON7LDS");
-			break;
-		case 4U:
-			LogInfo("    Screen Layout: DIY by ON7LDS (High speed)");
-			break;
-		default:
-			LogInfo("    Screen Layout: %u (Unknown)", screenLayout);
-			break;
-		}
-
-		if (port == "modem") {
-			CUDPSocket* socket = nullptr;
-			struct sockaddr_storage addr;
-			unsigned int addrLength = 0U;
-
-			bool nextionOutput = conf.getNextionOutput();
-			if (nextionOutput) {
-				unsigned short nextionUDPPort = conf.getNextionUDPPort();
-
-				LogInfo("    Output Port: %u", nextionUDPPort);
-
-				CUDPSocket::lookup("127.0.0.1", nextionUDPPort, addr, addrLength);
-
-				if (addrLength > 0U) {
-					socket = new CUDPSocket("127.0.0.1", nextionUDPPort - 1U);
-					bool ret = socket->open(addr);
-					if (!ret) {
-						delete socket;
-						socket = nullptr;
-					}
-				}
-			}
-
-			if (socket == nullptr) {
-				ISerialPort* serial = new IModemSerialPort(modem);
-				display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
-			} else {
-				ISerialPort* serial = new IModemSerialPort(modem);
-				display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, socket, addr, addrLength);
-			}
-		} else {
-			unsigned int baudrate = 9600U;
-			if (screenLayout == 4U)
-				baudrate = 115200U;
-			
-			LogInfo("    Display baudrate: %u ", baudrate);
-			ISerialPort* serial = new CUARTController(port, baudrate);
-			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
-		}
-	} else if (type == "LCDproc") {
+	}
+	 else if (type == "LCDproc") {
 		std::string address       = conf.getLCDprocAddress();
 		unsigned int port         = conf.getLCDprocPort();
 		unsigned int localPort    = conf.getLCDprocLocalPort();

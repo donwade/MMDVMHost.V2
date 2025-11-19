@@ -107,12 +107,6 @@ protected:
 	virtual void writeP25BERInt(float ber);
 	virtual void clearP25Int() = 0;
 
-  	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
-	virtual int  writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
-	virtual void writeNXDNRSSIInt(unsigned char rssi);
-	virtual void writeNXDNBERInt(float ber);
-	virtual void clearNXDNInt() = 0;
-
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message) = 0;
 	virtual void clearPOCSAGInt() = 0;
 

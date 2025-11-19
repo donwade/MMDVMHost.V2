@@ -59,10 +59,6 @@ protected:
 	virtual void writeP25RSSIInt(unsigned char rssi); 
 	virtual void clearP25Int();
 
-	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-	virtual void writeNXDNRSSIInt(unsigned char rssi);
-	virtual void clearNXDNInt();
-
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
 	virtual void clearPOCSAGInt();
 

@@ -1485,11 +1485,6 @@ bool CModem::hasP25() const
 	return (m_capabilities1 & CAP1_P25) == CAP1_P25;
 }
 
-bool CModem::hasNXDN() const
-{
-	return (m_capabilities1 & CAP1_NXDN) == CAP1_NXDN;
-}
-
 bool CModem::hasFM() const
 {
 	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
@@ -1590,12 +1585,8 @@ bool CModem::readVersion()
 						::strcat(modeText, " D-Star");
 					if (hasDMR())
 						::strcat(modeText, " DMR");
-					if (hasYSF())
-						::strcat(modeText, " YSF");
 					if (hasP25())
 						::strcat(modeText, " P25");
-					if (hasNXDN())
-						::strcat(modeText, " NXDN");
 					if (hasFM())
 						::strcat(modeText, " FM");
 					if (hasPOCSAG())

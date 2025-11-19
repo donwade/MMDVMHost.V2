@@ -13,7 +13,7 @@ OBJECTS = \
 		DMRDirectNetwork.o DMREMB.o DMREmbeddedData.o DMRFullLC.o DMRGatewayNetwork.o DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o \
 		DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o DStarSlowData.o FMControl.o FMNetwork.o Golay2087.o Golay24128.o \
 		Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o MMDVMHost.o \
-		Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o Nextion.o NullController.o NullDisplay.o  \
+		Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o  NullController.o NullDisplay.o  \
 		  \
 		P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o POCSAGControl.o \
 		POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS634717.o RSSIInterpolator.o SerialPort.o SMeter.o StopWatch.o Sync.o SHA256.o TFTSurenoo.o Thread.o \

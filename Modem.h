@@ -64,9 +64,7 @@ public:
 
 	bool hasDStar() const;
 	bool hasDMR() const;
-	bool hasYSF() const;
 	bool hasP25() const;
-	bool hasNXDN() const;
 	bool hasPOCSAG() const;
 	bool hasFM() const;
 
@@ -85,7 +83,6 @@ public:
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
 	bool hasP25Space() const;
-	bool hasNXDNSpace() const;
 	bool hasPOCSAGSpace() const;
 	unsigned int getFMSpace() const;
 

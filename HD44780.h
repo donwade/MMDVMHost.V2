@@ -111,17 +111,9 @@ protected:
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi); 
 	virtual void clearDMRInt(unsigned int slotNo);
 
-	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
-	virtual void writeFusionRSSIInt(unsigned char rssi); 
-	virtual void clearFusionInt();
-
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void writeP25RSSIInt(unsigned char rssi); 
 	virtual void clearP25Int();
-
-	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-	virtual void writeNXDNRSSIInt(unsigned char rssi); 
-	virtual void clearNXDNInt();
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
 	virtual void clearPOCSAGInt();

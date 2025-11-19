@@ -92,20 +92,6 @@ void CNullDisplay::clearDMRInt(unsigned int slotNo)
 #endif
 }
 
-void CNullDisplay::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 1);
-#endif
-}
-
-void CNullDisplay::clearFusionInt()
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 0);
-#endif
-}
-
 void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 #if defined(RASPBERRY_PI)
@@ -114,20 +100,6 @@ void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest
 }
 
 void CNullDisplay::clearP25Int()
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 0);
-#endif
-}
-
-void CNullDisplay::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 1);
-#endif
-}
-
-void CNullDisplay::clearNXDNInt()
 {
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 0);

@@ -161,14 +161,6 @@ public:
   unsigned int getP25TXHang() const;
   unsigned int getP25ModeHang() const;
 
-  // The NXDN section
-  bool         getNXDNEnabled() const;
-  unsigned int getNXDNId() const;
-  unsigned int getNXDNRAN() const;
-  bool         getNXDNSelfOnly() const;
-  bool         getNXDNRemoteGateway() const;
-  unsigned int getNXDNTXHang() const;
-  unsigned int getNXDNModeHang() const;
 
   // The POCSAG section
   bool         getPOCSAGEnabled() const;

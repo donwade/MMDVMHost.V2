@@ -108,16 +108,6 @@ void CCASTInfo::clearP25Int()
 {
 }
 
-void CCASTInfo::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
-{
-    if (m_modem != nullptr)
-        m_modem->writeNXDNInfo(source, group, dest, type);
-}
-
-void CCASTInfo::clearNXDNInt()
-{
-}
-
 void CCASTInfo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
     if (m_modem != nullptr)

@@ -469,51 +469,6 @@ void CLCDproc::clearP25Int()
 	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green
 }
 
-// LED 5 Green 16 Red 255 Yellow 255
-
-void CLCDproc::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(type != nullptr);
-
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	socketPrintf(m_socketfd, "screen_set NXDN -priority foreground");
-	socketPrintf(m_socketfd, "widget_set NXDN Mode 1 1 NXDN");
-
-	if (m_rows == 2U) {
-		socketPrintf(m_socketfd, "widget_set NXDN Line2 1 2 15 2 h 3 \"%.10s > %s%u\"", source, group ? "TG" : "", dest);
-	} else {
-		socketPrintf(m_socketfd, "widget_set NXDN Line2 1 2 15 2 h 3 \"%.10s >\"", source);
-		socketPrintf(m_socketfd, "widget_set NXDN Line3 1 3 15 3 h 3 \"%s%u\"", group ? "TG" : "", dest);
-		socketPrintf(m_socketfd, "output 255"); // Set LED5 color red
-	}
-
-	m_dmr = false;
-	m_rssiCount1 = 0U;
-}
-
-void CLCDproc::writeNXDNRSSIInt(unsigned char rssi)
-{
-	if (m_rssiCount1 == 0U) {
-		socketPrintf(m_socketfd, "widget_set NXDN Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
-	}
-
-	m_rssiCount1++;
-	if (m_rssiCount1 >= NXDN_RSSI_COUNT)
-		m_rssiCount1 = 0U;
-}
-
-void CLCDproc::clearNXDNInt()
-{
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	socketPrintf(m_socketfd, "widget_set NXDN Line2 1 2 15 2 h 3 \"Listening\"");
-	socketPrintf(m_socketfd, "widget_set NXDN Line3 1 3 15 3 h 3 \"\"");
-	socketPrintf(m_socketfd, "widget_set NXDN Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 16"); // Set LED5 color green
-}
-
 void CLCDproc::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
 }

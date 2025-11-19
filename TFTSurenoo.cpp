@@ -100,9 +100,7 @@ static const struct layoutdef Layout[] = {
 #define STR_DMR			"DMR"
 #define STR_DSTAR		"D-STAR"
 #define STR_MMDVM		"MMDVM"
-#define STR_NXDN		"NXDN"
 #define STR_P25			"P25"
-#define STR_YSF			"SystemFusion"
 
 CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout) :
 CDisplay(),
@@ -308,42 +306,6 @@ void CTFTSurenoo::clearP25Int()
 	clearDStarInt();
 }
 
-void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(type != nullptr);
-
-	if (m_mode != MODE_NXDN)
-		setModeLine(STR_NXDN);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
-	setStatusLine(statusLineNo(0), m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
-	setStatusLine(statusLineNo(1), m_temp);
-
-	m_mode = MODE_NXDN;
-}
-
-int CTFTSurenoo::writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type)
-{
-	assert(type != nullptr);
-
-	setModeLine(STR_NXDN);
-	setStatusLine(statusLineNo(2), (source.get(keyFIRST_NAME) + " " + source.get(keyLAST_NAME)).c_str());
-	setStatusLine(statusLineNo(3), source.get(keyCITY).c_str());
-	setStatusLine(statusLineNo(4), source.get(keySTATE).c_str());
-	setStatusLine(statusLineNo(5), source.get(keyCOUNTRY).c_str());
-
-	m_mode = MODE_NXDN;
-
-	return 1;
-}
-
-void CTFTSurenoo::clearNXDNInt()
-{
-	clearDStarInt();
-}
 
 void CTFTSurenoo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {

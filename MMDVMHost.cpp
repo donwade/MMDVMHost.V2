@@ -1108,7 +1108,6 @@ bool CMMDVMHost::createModem()
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
 	unsigned int p25TXHang       = m_conf.getP25TXHang();
-	unsigned int nxdnTXHang      = m_conf.getNXDNTXHang();
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
 	unsigned int pocsagFrequency = m_conf.getPOCSAGFrequency();
@@ -1181,7 +1180,6 @@ bool CMMDVMHost::createModem()
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setP25Params(p25TXHang);
-	m_modem->setNXDNParams(nxdnTXHang);
 
 	if (m_fmEnabled) {
 		std::string  callsign             = m_conf.getFMCallsign();
