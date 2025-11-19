@@ -138,23 +138,19 @@ m_dstar(nullptr),
 m_dmr(nullptr),
 m_p25(nullptr),
 m_pocsag(nullptr),
-m_fm(nullptr),
-m_dstarNetwork(nullptr),
+ m_dstarNetwork(nullptr),
 m_dmrNetwork(nullptr),
 m_p25Network(nullptr),
 m_pocsagNetwork(nullptr),
-m_fmNetwork(nullptr),
-m_display(nullptr),
+ m_display(nullptr),
 m_mode(MODE_IDLE),
 m_dstarRFModeHang(10U),
 m_dmrRFModeHang(10U),
 m_p25RFModeHang(10U),
-m_fmRFModeHang(10U),
 m_dstarNetModeHang(3U),
 m_dmrNetModeHang(3U),
 m_p25NetModeHang(3U),
 m_pocsagNetModeHang(3U),
-m_fmNetModeHang(3U),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
@@ -164,7 +160,6 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_p25Enabled(false),
 m_pocsagEnabled(false),
-m_fmEnabled(false),
 m_cwIdTime(0U),
 m_dmrLookup(nullptr),
 m_callsign(),
@@ -297,12 +292,7 @@ int CMMDVMHost::run()
 		m_p25Enabled = false;
 	}
 
-	if (m_fmEnabled && !m_modem->hasFM()) {
-		LogWarning("FM enabled in the host but not in the modem firmware, disabling");
-		m_fmEnabled = false;
-	}
-
-	if (m_pocsagEnabled && !m_modem->hasPOCSAG()) {
+ 	if (m_pocsagEnabled && !m_modem->hasPOCSAG()) {
 		LogWarning("POCSAG enabled in the host but not in the modem firmware, disabling");
 		m_pocsagEnabled = false;
 	}
@@ -335,13 +325,7 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
-	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
-		ret = createFMNetwork();
-		if (!ret)
-			return 1;
-	}
-
-	sockaddr_storage transparentAddress;
+ 	sockaddr_storage transparentAddress;
 	unsigned int transparentAddrLen;
 	CUDPSocket* transparentSocket = nullptr;
 
@@ -594,17 +578,7 @@ int CMMDVMHost::run()
 			pocsagTimer.start();
 	}
 
-	if (m_fmEnabled) {
-		bool preEmphasis  = m_conf.getFMPreEmphasis();
-		bool deEmphasis   = m_conf.getFMDeEmphasis();
-		float txAudioGain = m_conf.getFMTXAudioGain();
-		float rxAudioGain = m_conf.getFMRXAudioGain();
-		m_fmRFModeHang    = m_conf.getFMModeHang();
-
-		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis);
-	}
-
-	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
+ 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
 		std::string address = m_conf.getRemoteControlAddress();
 		unsigned short port = m_conf.getRemoteControlPort();
@@ -752,24 +726,7 @@ int CMMDVMHost::run()
 			}
 		}
 
-		len = m_modem->readFMData(data);
-		if (m_fm != nullptr && m_fmEnabled && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				bool ret = m_fm->writeModem(data, len);
-				if (ret) {
-					m_modeTimer.setTimeout(m_fmRFModeHang);
-					setMode(MODE_FM);
-				}
-			} else if (m_mode == MODE_FM) {
-				bool ret = m_fm->writeModem(data, len);
-				if (ret)
-					m_modeTimer.start();
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("FM modem data received when in mode %u", m_mode);
-			}
-		}
-
-		len = m_modem->readTransparentData(data);
+ 		len = m_modem->readTransparentData(data);
 		if (transparentSocket != nullptr && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
 
@@ -881,26 +838,7 @@ int CMMDVMHost::run()
 			}
 		}
 
-		if (m_fm != nullptr && m_fmEnabled) {
-			unsigned int space = m_modem->getFMSpace();
-			if (space > 0U) {
-				len = m_fm->readModem(data, space);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_fmNetModeHang);
-						setMode(MODE_FM);
-					}
-					if (m_mode == MODE_FM) {
-						m_modem->writeFMData(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("FM data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
-
-		if (transparentSocket != nullptr) {
+ 		if (transparentSocket != nullptr) {
 			sockaddr_storage address;
 			unsigned int addrlen;
 			len = transparentSocket->read(data, 200U, address, addrlen);
@@ -935,10 +873,7 @@ int CMMDVMHost::run()
 			m_p25->clock(ms);
 		if (m_pocsag != nullptr)
 			m_pocsag->clock(ms);
-		if (m_fm != nullptr)
-			m_fm->clock(ms);
-
-		if (m_dstarNetwork != nullptr)
+ 		if (m_dstarNetwork != nullptr)
 			m_dstarNetwork->clock(ms);
 		if (m_dmrNetwork != nullptr)
 			m_dmrNetwork->clock(ms);
@@ -946,9 +881,7 @@ int CMMDVMHost::run()
 			m_p25Network->clock(ms);
 		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->clock(ms);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->clock(ms);
-
+ 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (!m_modem->hasTX()){
@@ -1044,12 +977,7 @@ int CMMDVMHost::run()
 		delete m_pocsagNetwork;
 	}
 
-	if (m_fmNetwork != nullptr) {
-		m_fmNetwork->close();
-		delete m_fmNetwork;
-	}
-
-	if (transparentSocket != nullptr) {
+ 	if (transparentSocket != nullptr) {
 		transparentSocket->close();
 		delete transparentSocket;
 	}
@@ -1065,8 +993,7 @@ int CMMDVMHost::run()
 	delete m_dmr;
 	delete m_p25;
 	delete m_pocsag;
-	delete m_fm;
-
+ 
 	LogInfo("MMDVMHost-%s has stopped", VERSION);
 
 	m_modem->close();
@@ -1175,102 +1102,13 @@ bool CMMDVMHost::createModem()
 		return false;
 
 	m_modem->setPort(port);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_p25Enabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setP25Params(p25TXHang);
 
-	if (m_fmEnabled) {
-		std::string  callsign             = m_conf.getFMCallsign();
-		unsigned int callsignSpeed        = m_conf.getFMCallsignSpeed();
-		unsigned int callsignFrequency    = m_conf.getFMCallsignFrequency();
-		unsigned int callsignTime         = m_conf.getFMCallsignTime();
-		unsigned int callsignHoldoff      = m_conf.getFMCallsignHoldoff();
-		float        callsignHighLevel    = m_conf.getFMCallsignHighLevel();
-		float        callsignLowLevel     = m_conf.getFMCallsignLowLevel();
-		bool         callsignAtStart      = m_conf.getFMCallsignAtStart();
-		bool         callsignAtEnd        = m_conf.getFMCallsignAtEnd();
-		bool         callsignAtLatch      = m_conf.getFMCallsignAtLatch();
-		std::string  rfAck                = m_conf.getFMRFAck();
-		unsigned int ackSpeed             = m_conf.getFMAckSpeed();
-		unsigned int ackFrequency         = m_conf.getFMAckFrequency();
-		unsigned int ackMinTime           = m_conf.getFMAckMinTime();
-		unsigned int ackDelay             = m_conf.getFMAckDelay();
-		float        ackLevel             = m_conf.getFMAckLevel();
-		unsigned int timeout              = m_conf.getFMTimeout();
-		float        timeoutLevel         = m_conf.getFMTimeoutLevel();
-		float        ctcssFrequency       = m_conf.getFMCTCSSFrequency();
-		unsigned int ctcssHighThreshold   = m_conf.getFMCTCSSHighThreshold();
-		unsigned int ctcssLowThreshold    = m_conf.getFMCTCSSLowThreshold();
-		float        ctcssLevel           = m_conf.getFMCTCSSLevel();
-		unsigned int kerchunkTime         = m_conf.getFMKerchunkTime();
-		unsigned int hangTime             = m_conf.getFMHangTime();
-		unsigned int accessMode           = m_conf.getFMAccessMode();
-		bool         linkMode             = m_conf.getFMLinkMode();
-		bool         cosInvert            = m_conf.getFMCOSInvert();
-		bool         noiseSquelch         = m_conf.getFMNoiseSquelch();
-		unsigned int squelchHighThreshold = m_conf.getFMSquelchHighThreshold();
-		unsigned int squelchLowThreshold  = m_conf.getFMSquelchLowThreshold();
-		unsigned int rfAudioBoost         = m_conf.getFMRFAudioBoost();
-		float        maxDevLevel          = m_conf.getFMMaxDevLevel();
-		unsigned int modeHangTime         = m_conf.getFMModeHang();
-
-		LogInfo("FM Parameters");
-		LogInfo("    Callsign: %s", callsign.c_str());
-		LogInfo("    Callsign Speed: %uWPM", callsignSpeed);
-		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
-		LogInfo("    Callsign Time: %umins", callsignTime);
-		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
-		LogInfo("    Callsign High Level: %.1f%%", callsignHighLevel);
-		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
-		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
-		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
-		LogInfo("    Callsign At Latch: %s", callsignAtLatch ? "yes" : "no");
-		LogInfo("    RF Ack: %s", rfAck.c_str());
-		LogInfo("    Ack Speed: %uWPM", ackSpeed);
-		LogInfo("    Ack Frequency: %uHz", ackFrequency);
-		LogInfo("    Ack Min Time: %us", ackMinTime);
-		LogInfo("    Ack Delay: %ums", ackDelay);
-		LogInfo("    Ack Level: %.1f%%", ackLevel);
-		LogInfo("    Timeout: %us", timeout);
-		LogInfo("    Timeout Level: %.1f%%", timeoutLevel);
-		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
-		LogInfo("    CTCSS High Threshold: %u", ctcssHighThreshold);
-		LogInfo("    CTCSS Low Threshold: %u", ctcssLowThreshold);
-		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
-		LogInfo("    Kerchunk Time: %us", kerchunkTime);
-		LogInfo("    Hang Time: %us", hangTime);
-		LogInfo("    Access Mode: %u", accessMode);
-		LogInfo("    Link Mode: %s", linkMode ? "yes" : "no");
-		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
-
-		LogInfo("    Noise Squelch: %s", noiseSquelch ? "yes" : "no");
-		if (noiseSquelch) {
-			LogInfo("    Squelch High Threshold: %u", squelchHighThreshold);
-			LogInfo("    Squelch Low Threshold: %u", squelchLowThreshold);
-		}
-
-		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
-		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
-		LogInfo("    Mode Hang: %us", modeHangTime);
-
-		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
-		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, linkMode, cosInvert, noiseSquelch, squelchHighThreshold, squelchLowThreshold, rfAudioBoost, maxDevLevel);
-
-		if (m_conf.getFMNetworkEnabled()) {
-			std::string  extAck        = m_conf.getFMExtAck();
-			unsigned int extAudioBoost = m_conf.getFMExtAudioBoost();
-
-			LogInfo("    Ext. Ack: %s", extAck.c_str());
-			LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
-
-			m_modem->setFMExtParams(extAck, extAudioBoost);
-		}
-	}
-
-	bool ret = m_modem->open();
+ 	bool ret = m_modem->open();
 	if (!ret) {
 		delete m_modem;
 		m_modem = nullptr;
@@ -1453,62 +1291,14 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 	return true;
 }
-
-bool CMMDVMHost::createFMNetwork()
-{
-	std::string callsign       = m_conf.getFMCallsign();
-	std::string protocol       = m_conf.getFMNetworkProtocol();
-	unsigned int sampleRate    = m_conf.getFMNetworkSampleRate();
-	std::string squelchFile    = m_conf.getFMNetworkSquelchFile();
-	std::string gatewayAddress = m_conf.getFMGatewayAddress();
-	unsigned short gatewayPort = m_conf.getFMGatewayPort();
-	std::string localAddress   = m_conf.getFMLocalAddress();
-	unsigned short localPort   = m_conf.getFMLocalPort();
-	bool preEmphasis           = m_conf.getFMPreEmphasis();
-	bool deEmphasis            = m_conf.getFMDeEmphasis();
-	float txAudioGain          = m_conf.getFMTXAudioGain();
-	float rxAudioGain          = m_conf.getFMRXAudioGain();
-	m_fmNetModeHang            = m_conf.getFMNetworkModeHang();
-	bool debug                 = m_conf.getFMNetworkDebug();
-
-	LogInfo("FM Network Parameters");
-	LogInfo("    Protocol: %s", protocol.c_str());
-	if (protocol == "RAW") {
-		LogInfo("    Sample Rate: %u", sampleRate);
-		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
-	}
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %hu", gatewayPort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %hu", localPort);
-	LogInfo("    Pre-Emphasis: %s", preEmphasis ? "yes" : "no");
-	LogInfo("    De-Emphasis: %s", deEmphasis ? "yes" : "no");
-	LogInfo("    TX Audio Gain: %.2f", txAudioGain);
-	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
-	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
-
-	m_fmNetwork = new CFMNetwork(callsign, protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
-
-	bool ret = m_fmNetwork->open();
-	if (!ret) {
-		delete m_fmNetwork;
-		m_fmNetwork = nullptr;
-		return false;
-	}
-
-	m_fmNetwork->enable(true);
-
-	return true;
-}
-
+ 
 void CMMDVMHost::readParams()
 {
 	m_dstarEnabled  = m_conf.getDStarEnabled();
 	m_dmrEnabled    = m_conf.getDMREnabled();
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
-	m_fmEnabled     = m_conf.getFMEnabled();
-	m_duplex        = m_conf.getDuplex();
+ 	m_duplex        = m_conf.getDuplex();
 	m_callsign      = m_conf.getCallsign();
 	m_id            = m_conf.getId();
 	m_timeout       = m_conf.getTimeout();
@@ -1522,8 +1312,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
-	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
-}
+ }
 
 void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
 {
@@ -1531,7 +1320,7 @@ void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
 
 	mode = enabled;
 
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_p25Enabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
 	if (!m_modem->writeConfig())
 		LogError("Cannot write Config to MMDVM");
 }
@@ -1562,12 +1351,7 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 					m_p25Network->enable(enableMode);
 				m_p25->enable(enableMode);
 				break;
-			case MODE_FM:
-				if (m_fmNetwork != nullptr)
-					m_fmNetwork->enable(enableMode);
-				m_fm->enable(enableMode);
-				break;
-			default:
+ 			default:
 				break;
 			}
 		}
@@ -1586,10 +1370,7 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 		case MODE_NXDN:
 			while (m_modem->readNXDNData(data) > 0U);
 			break;
-		case MODE_FM:
-			while (m_modem->readFMData(data) > 0U);
-			break;
-		default:
+ 		default:
 			break;
 		}
 
@@ -1615,9 +1396,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr && m_dstarEnabled)
+ 		if (m_dstar != nullptr && m_dstarEnabled)
 			m_dstar->enable(true);
 		if (m_dmr != nullptr)
 			m_dmr->enable(false);
@@ -1625,9 +1404,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_pocsag != nullptr)
 			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		if (m_dstarEnabled) {
+ 		if (m_dstarEnabled) {
 			m_modem->setMode(MODE_DSTAR);
 			m_mode = MODE_DSTAR;
 			m_modeTimer.start();
@@ -1646,9 +1423,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
+ 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr && m_dmrEnabled)
 			m_dmr->enable(true);
@@ -1656,9 +1431,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr)
 			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		if (m_dmrEnabled) {
+ 		if (m_dmrEnabled) {
 			m_modem->setMode(MODE_DMR);
 			if (m_duplex) {
 				m_modem->writeDMRStart(true);
@@ -1681,9 +1454,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(true);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
+ 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
 			m_dmr->enable(false);
@@ -1691,9 +1462,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(true);
  		if (m_pocsag != nullptr)
 			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		if (m_p25Enabled) {
+ 		if (m_p25Enabled) {
 			m_modem->setMode(MODE_P25);
 			m_mode = MODE_P25;
 			m_modeTimer.start();
@@ -1703,30 +1472,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		}
 		break;
 
-	case MODE_NXDN:
-		if (m_dstarNetwork != nullptr)
-			m_dstarNetwork->enable(false);
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
-		if (m_p25Network != nullptr)
-			m_p25Network->enable(false);
- 		if (m_pocsagNetwork != nullptr)
-			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
-			m_dstar->enable(false);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
-		if (m_p25 != nullptr)
-			m_p25->enable(false);
- 		if (m_pocsag != nullptr)
-			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
- 		break;
-
-	case MODE_POCSAG:
+ 	case MODE_POCSAG:
 		if (m_dstarNetwork != nullptr)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != nullptr)
@@ -1735,9 +1481,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr && m_pocsagEnabled)
 			m_pocsagNetwork->enable(true);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
+ 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
 			m_dmr->enable(false);
@@ -1745,52 +1489,14 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr && m_pocsagEnabled)
 			m_pocsag->enable(true);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		m_modem->setMode(MODE_POCSAG);
+ 		m_modem->setMode(MODE_POCSAG);
 		m_mode = MODE_POCSAG;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("POCSAG");
 		LogMessage("Mode set to POCSAG");
 		break;
-
-	case MODE_FM:
-		if (m_dstarNetwork != nullptr)
-			m_dstarNetwork->enable(false);
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
-		if (m_p25Network != nullptr)
-			m_p25Network->enable(false);
- 		if (m_pocsagNetwork != nullptr)
-			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr && m_fmEnabled)
-			m_fmNetwork->enable(true);
-		if (m_dstar != nullptr)
-			m_dstar->enable(false);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
-		if (m_p25 != nullptr)
-			m_p25->enable(false);
- 		if (m_pocsag != nullptr)
-			m_pocsag->enable(false);
-		if (m_fm != nullptr && m_fmEnabled)
-			m_fm->enable(true);
-		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
-			m_modem->writeDMRStart(false);
-			m_dmrTXTimer.stop();
-		}
-		if (m_fmEnabled) {
-			m_modem->setMode(MODE_FM);
-			m_display->setFM();
-			m_mode = MODE_FM;
-			m_modeTimer.start();
-			m_cwIdTimer.stop();
-			createLockFile("FM");
-			LogMessage("Mode set to FM");
-		}
-		break;
-
+ 
 	case MODE_LOCKOUT:
 		if (m_dstarNetwork != nullptr)
 			m_dstarNetwork->enable(false);
@@ -1800,9 +1506,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
+ 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
 			m_dmr->enable(false);
@@ -1810,9 +1514,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr)
 			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
+ 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
@@ -1835,9 +1537,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_fmNetwork != nullptr)
-			m_fmNetwork->enable(false);
-		if (m_dstar != nullptr)
+ 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
 			m_dmr->enable(false);
@@ -1845,9 +1545,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr)
 			m_pocsag->enable(false);
-		if (m_fm != nullptr)
-			m_fm->enable(false);
-		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
+ 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
@@ -1868,9 +1566,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(true);
  		if (m_pocsagNetwork != nullptr && m_pocsagEnabled)
 			m_pocsagNetwork->enable(true);
-		if (m_fmNetwork != nullptr && m_fmEnabled)
-			m_fmNetwork->enable(true);
-		if (m_dstar != nullptr && m_dstarEnabled)
+ 		if (m_dstar != nullptr && m_dstarEnabled)
 			m_dstar->enable(true);
 		if (m_dmr != nullptr && m_dmrEnabled)
 			m_dmr->enable(true);
@@ -1878,9 +1574,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(true);
  		if (m_pocsag != nullptr && m_pocsagEnabled)
 			m_pocsag->enable(true);
-		if (m_fm != nullptr && m_fmEnabled)
-			m_fm->enable(true);
-		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrEnabled) {
+ 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrEnabled) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
@@ -1948,11 +1642,7 @@ void CMMDVMHost::remoteControl()
 		if (m_p25 != nullptr)
 			processModeCommand(MODE_P25, m_p25RFModeHang);
 		break;
- 	case REMOTE_COMMAND::MODE_FM:
-		if (m_fmEnabled)
-			processModeCommand(MODE_FM, 0);
-		break;
-	case REMOTE_COMMAND::ENABLE_DSTAR:
+ 	case REMOTE_COMMAND::ENABLE_DSTAR:
 		processEnableModeCommand(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_DMR:
@@ -1961,10 +1651,7 @@ void CMMDVMHost::remoteControl()
 	case REMOTE_COMMAND::ENABLE_P25:
 		processEnableModeCommand(MODE_P25, (m_p25 != nullptr), m_p25Enabled, true);
 		break;
- 	case REMOTE_COMMAND::ENABLE_FM:
-		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, true);
-		break;
-	case REMOTE_COMMAND::DISABLE_DSTAR:
+ 	case REMOTE_COMMAND::DISABLE_DSTAR:
 		processEnableModeCommand(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_DMR:
@@ -1973,10 +1660,7 @@ void CMMDVMHost::remoteControl()
 	case REMOTE_COMMAND::DISABLE_P25:
 		processEnableModeCommand(MODE_P25, (m_p25), m_p25Enabled, false);
 		break;
- 	case REMOTE_COMMAND::DISABLE_FM:
-		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, false);
-		break;
-	case REMOTE_COMMAND::PAGE:
+ 	case REMOTE_COMMAND::PAGE:
 		if (m_pocsag != nullptr) {
 			unsigned int ric = m_remoteControl->getArgUInt(0U);
 			std::string text;
@@ -2063,8 +1747,7 @@ void CMMDVMHost::buildNetworkStatusString(std::string &str)
 	str += std::string("dstar:") + (((m_dstarNetwork == nullptr) || (m_dstarEnabled == false)) ? "n/a" : (m_dstarNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" dmr:") + (((m_dmrNetwork == nullptr) || (m_dmrEnabled == false)) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" p25:") + (((m_p25Network == nullptr) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
- 	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
-}
+ }
 
 void CMMDVMHost::buildNetworkHostsString(std::string &str)
 {
@@ -2094,5 +1777,4 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string("dstar:\"") + ((dstarReflector.length() == 0) ? "NONE" : dstarReflector) + "\"";
 	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != nullptr)) ? m_conf.getDMRNetworkRemoteAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != nullptr)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
- 	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != nullptr)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
-}
+ }

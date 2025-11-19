@@ -33,9 +33,9 @@
 ///#include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
-#include "FMNetwork.h"
+///#include "FMNetwork.h"
 #include "DMRLookup.h"
-#include "FMControl.h"
+///#include "FMControl.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -61,23 +61,20 @@ private:
   CDStarControl*  m_dstar;
   CDMRControl*    m_dmr;
   CP25Control*    m_p25;
-   CPOCSAGControl* m_pocsag;
-  CFMControl*     m_fm;
+  CPOCSAGControl* m_pocsag;
   CDStarNetwork*  m_dstarNetwork;
   IDMRNetwork*    m_dmrNetwork;
   CP25Network*    m_p25Network;
   CPOCSAGNetwork* m_pocsagNetwork;
-  CFMNetwork*     m_fmNetwork;
   CDisplay*       m_display;
   unsigned char   m_mode;
   unsigned int    m_dstarRFModeHang;
   unsigned int    m_dmrRFModeHang;
   unsigned int    m_p25RFModeHang;
-  unsigned int    m_fmRFModeHang;
   unsigned int    m_dstarNetModeHang;
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_p25NetModeHang;
-   unsigned int    m_pocsagNetModeHang;
+  unsigned int    m_pocsagNetModeHang;
   unsigned int    m_fmNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_dmrTXTimer;
@@ -87,8 +84,7 @@ private:
   bool            m_dstarEnabled;
   bool            m_dmrEnabled;
   bool            m_p25Enabled;
-   bool            m_pocsagEnabled;
-  bool            m_fmEnabled;
+  bool            m_pocsagEnabled;
   unsigned int    m_cwIdTime;
   CDMRLookup*     m_dmrLookup;
   std::string     m_callsign;

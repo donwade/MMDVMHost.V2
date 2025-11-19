@@ -74,10 +74,6 @@ void CCASTInfo::setQuitInt()
 {
 }
 
-void CCASTInfo::setFMInt()
-{
-}
-
 void CCASTInfo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
    if (m_modem != nullptr)

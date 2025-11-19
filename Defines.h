@@ -26,9 +26,7 @@ const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;
 const unsigned char MODE_POCSAG  = 6U;
 
-const unsigned char MODE_FM      = 10U;
-
-const unsigned char MODE_CW      = 98U;
+ const unsigned char MODE_CW      = 98U;
 const unsigned char MODE_LOCKOUT = 99U;
 const unsigned char MODE_ERROR   = 100U;
 const unsigned char MODE_QUIT    = 110U;

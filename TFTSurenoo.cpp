@@ -188,14 +188,6 @@ void CTFTSurenoo::setQuitInt()
 	m_mode = MODE_QUIT;
 }
 
-void CTFTSurenoo::setFMInt()
-{
-	setModeLine(STR_MMDVM);
-	setStatusLine(statusLineNo(1), "FM");
-
-	m_mode = MODE_FM;
-}
-
 void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != nullptr);

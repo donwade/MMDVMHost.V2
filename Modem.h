@@ -47,7 +47,7 @@ public:
 
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool p25Enabled, bool pocsagEnabled, bool fmEnabled);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
@@ -204,42 +204,7 @@ private:
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
 
-	std::string                m_fmCallsign;
-	unsigned int               m_fmCallsignSpeed;
-	unsigned int               m_fmCallsignFrequency;
-	unsigned int               m_fmCallsignTime;
-	unsigned int               m_fmCallsignHoldoff;
-	float                      m_fmCallsignHighLevel;
-	float                      m_fmCallsignLowLevel;
-	bool                       m_fmCallsignAtStart;
-	bool                       m_fmCallsignAtEnd;
-	bool                       m_fmCallsignAtLatch;
-	std::string                m_fmRfAck;
-	std::string                m_fmExtAck;
-	unsigned int               m_fmAckSpeed;
-	unsigned int               m_fmAckFrequency;
-	unsigned int               m_fmAckMinTime;
-	unsigned int               m_fmAckDelay;
-	float                      m_fmAckLevel;
-	unsigned int               m_fmTimeout;
-	float                      m_fmTimeoutLevel;
-	float                      m_fmCtcssFrequency;
-	unsigned int               m_fmCtcssHighThreshold;
-	unsigned int               m_fmCtcssLowThreshold;
-	float                      m_fmCtcssLevel;
-	unsigned int               m_fmKerchunkTime;
-	unsigned int               m_fmHangTime;
-	unsigned int               m_fmAccessMode;
-	bool                       m_fmLinkMode;
-	bool                       m_fmCOSInvert;
-	bool                       m_fmNoiseSquelch;
-	unsigned int               m_fmSquelchHighThreshold;
-	unsigned int               m_fmSquelchLowThreshold;
-	unsigned int               m_fmRFAudioBoost;
-	unsigned int               m_fmExtAudioBoost;
-	float                      m_fmMaxDevLevel;
-	bool                       m_fmExtEnable;
-	unsigned char              m_capabilities1;
+ 	unsigned char              m_capabilities1;
 	unsigned char              m_capabilities2;
 
 	bool readVersion();

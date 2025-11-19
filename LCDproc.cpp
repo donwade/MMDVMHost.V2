@@ -254,22 +254,6 @@ void CLCDproc::setQuitInt()
 	m_dmr = false;
 }
 
-void CLCDproc::setFMInt()
-{
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	if (m_screensDefined) {
-		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
-		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
-		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
-		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
-		socketPrintf(m_socketfd, "widget_set Status Status %u %u FM", m_cols - 6, m_rows);
-		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
-	}
-
-	m_dmr = false;
-}
-
 void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != nullptr);

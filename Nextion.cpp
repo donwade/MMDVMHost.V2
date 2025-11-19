@@ -316,25 +316,6 @@ void CNextion::setQuitInt()
 	m_mode = MODE_QUIT;
 }
 
-void CNextion::setFMInt()
-{
-	sendCommand("page MMDVM");
-	sendCommandAction(1U);
-
-	char command[20];
-	if (m_brightness > 0U) {
-		::sprintf(command, "dim=%u", m_brightness);
-		sendCommand(command);
-	}
-
-	sendCommand("t0.txt=\"FM\"");
-	sendCommandAction(18U);
-
-	m_clockDisplayTimer.stop();
-
-	m_mode = MODE_FM;
-}
-
 void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != nullptr);
