@@ -56,11 +56,6 @@ public:
 	void writeDMRTA(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
 	void clearDMR(unsigned int slotNo);
 
-	void writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
-	void writeFusionRSSI(unsigned char rssi);
-	void writeFusionBER(float ber);
-	void clearFusion();
-
 	void writeP25(const char* source, bool group, unsigned int dest, const char* type);
 	void writeP25RSSI(unsigned char rssi);
 	void writeP25BER(float ber);

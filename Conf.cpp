@@ -40,14 +40,12 @@ enum class SECTION {
 	TRANSPARENT,
 	DSTAR,
 	DMR,
-	FUSION,
 	P25,
 	NXDN,
 	POCSAG,
 	FM,
 	DSTAR_NETWORK,
 	DMR_NETWORK,
-	FUSION_NETWORK,
 	P25_NETWORK,
 	NXDN_NETWORK,
 	POCSAG_NETWORK,
@@ -142,12 +140,6 @@ m_dmrTXHang(4U),
 m_dmrModeHang(10U),
 m_dmrOVCM(DMR_OVCM::OFF),
 m_dmrProtect(false),
-m_fusionEnabled(false),
-m_fusionLowDeviation(false),
-m_fusionRemoteGateway(false),
-m_fusionSelfOnly(false),
-m_fusionTXHang(4U),
-m_fusionModeHang(10U),
 m_p25Enabled(false),
 m_p25Id(0U),
 m_p25NAC(0x293U),
@@ -171,13 +163,6 @@ m_dmrNetworkJitter(360U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
 m_dmrNetworkModeHang(3U),
-m_fusionNetworkEnabled(false),
-m_fusionNetworkLocalAddress(),
-m_fusionNetworkLocalPort(0U),
-m_fusionNetworkGatewayAddress(),
-m_fusionNetworkGatewayPort(0U),
-m_fusionNetworkModeHang(3U),
-m_fusionNetworkDebug(false),
 m_p25NetworkEnabled(false),
 m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
@@ -274,8 +259,6 @@ bool CConf::read()
 				section = SECTION::DSTAR;
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
 				section = SECTION::DMR;
-			else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
-				section = SECTION::FUSION;
 			else if (::strncmp(buffer, "[P25]", 5U) == 0)
 				section = SECTION::P25;
 			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
@@ -288,8 +271,6 @@ bool CConf::read()
 				section = SECTION::DSTAR_NETWORK;
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
 				section = SECTION::DMR_NETWORK;
-			else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
-				section = SECTION::FUSION_NETWORK;
 			else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 				section = SECTION::P25_NETWORK;
 			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
@@ -572,19 +553,6 @@ bool CConf::read()
 				}
 			} else if (::strcmp(key, "Protect") == 0)
 				m_dmrProtect = ::atoi(value) == 1;
-		} else if (section == SECTION::FUSION) {
-			if (::strcmp(key, "Enable") == 0)
-				m_fusionEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "LowDeviation") == 0)
-				m_fusionLowDeviation = ::atoi(value) == 1;
-			else if (::strcmp(key, "RemoteGateway") == 0)
-				m_fusionRemoteGateway = ::atoi(value) == 1;
-			else if (::strcmp(key, "SelfOnly") == 0)
-				m_fusionSelfOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "TXHang") == 0)
-				m_fusionTXHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_fusionModeHang = (unsigned int)::atoi(value);
 		} else if (section == SECTION::P25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25Enabled = ::atoi(value) == 1;
@@ -634,21 +602,6 @@ bool CConf::read()
 				m_dmrNetworkSlot2 = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_dmrNetworkModeHang = (unsigned int)::atoi(value);
-		} else if (section == SECTION::FUSION_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_fusionNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_fusionNetworkLocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_fusionNetworkLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "GatewayAddress") == 0)
-				m_fusionNetworkGatewayAddress = value;
-			else if (::strcmp(key, "GatewayPort") == 0)
-				m_fusionNetworkGatewayPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_fusionNetworkModeHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Debug") == 0)
-				m_fusionNetworkDebug = ::atoi(value) == 1;
 		} else if (section == SECTION::P25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25NetworkEnabled = ::atoi(value) == 1;
@@ -1171,36 +1124,6 @@ bool CConf::getDMRProtect() const
 	return m_dmrProtect;
 }
 
-bool CConf::getFusionEnabled() const
-{
-	return m_fusionEnabled;
-}
-
-bool CConf::getFusionLowDeviation() const
-{
-	return m_fusionLowDeviation;
-}
-
-bool CConf::getFusionRemoteGateway() const
-{
-	return m_fusionRemoteGateway;
-}
-
-unsigned int CConf::getFusionTXHang() const
-{
-	return m_fusionTXHang;
-}
-
-bool CConf::getFusionSelfOnly() const
-{
-	return m_fusionSelfOnly;
-}
-
-unsigned int CConf::getFusionModeHang() const
-{
-	return m_fusionModeHang;
-}
-
 bool CConf::getP25Enabled() const
 {
 	return m_p25Enabled;
@@ -1315,42 +1238,6 @@ bool CConf::getDMRNetworkSlot2() const
 {
 	return m_dmrNetworkSlot2;
 }
-
-bool CConf::getFusionNetworkEnabled() const
-{
-	return m_fusionNetworkEnabled;
-}
-
-std::string CConf::getFusionNetworkLocalAddress() const
-{
-	return m_fusionNetworkLocalAddress;
-}
-
-unsigned short CConf::getFusionNetworkLocalPort() const
-{
-	return m_fusionNetworkLocalPort;
-}
-
-std::string CConf::getFusionNetworkGatewayAddress() const
-{
-	return m_fusionNetworkGatewayAddress;
-}
-
-unsigned short CConf::getFusionNetworkGatewayPort() const
-{
-	return m_fusionNetworkGatewayPort;
-}
-
-unsigned int CConf::getFusionNetworkModeHang() const
-{
-	return m_fusionNetworkModeHang;
-}
-
-bool CConf::getFusionNetworkDebug() const
-{
-	return m_fusionNetworkDebug;
-}
-
 bool CConf::getP25NetworkEnabled() const
 {
 	return m_p25NetworkEnabled;

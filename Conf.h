@@ -142,14 +142,6 @@ public:
   DMR_OVCM     getDMROVCM() const;
   bool         getDMRProtect() const;
 
-  // The System Fusion section
-  bool          getFusionEnabled() const;
-  bool          getFusionLowDeviation() const;
-  bool          getFusionRemoteGateway() const;
-  bool          getFusionSelfOnly() const;
-  unsigned int  getFusionTXHang() const;
-  unsigned int  getFusionModeHang() const;
-
   // The P25 section
   bool         getP25Enabled() const;
   unsigned int getP25Id() const;
@@ -189,15 +181,6 @@ public:
   bool         getDMRNetworkSlot1() const;
   bool         getDMRNetworkSlot2() const;
   unsigned int getDMRNetworkModeHang() const;
-
-  // The System Fusion Network section
-  bool         getFusionNetworkEnabled() const;
-  std::string  getFusionNetworkLocalAddress() const;
-  unsigned short getFusionNetworkLocalPort() const;
-  std::string  getFusionNetworkGatewayAddress() const;
-  unsigned short getFusionNetworkGatewayPort() const;
-  unsigned int getFusionNetworkModeHang() const;
-  bool         getFusionNetworkDebug() const;
 
   // The P25 Network section
   bool         getP25NetworkEnabled() const;
@@ -385,13 +368,6 @@ private:
   DMR_OVCM     m_dmrOVCM;
   bool         m_dmrProtect;
 
-  bool          m_fusionEnabled;
-  bool          m_fusionLowDeviation;
-  bool          m_fusionRemoteGateway;
-  bool          m_fusionSelfOnly;
-  unsigned int  m_fusionTXHang;
-  unsigned int  m_fusionModeHang;
-
   bool         m_p25Enabled;
   unsigned int m_p25Id;
   unsigned int m_p25NAC;
@@ -417,14 +393,6 @@ private:
   bool         m_dmrNetworkSlot1;
   bool         m_dmrNetworkSlot2;
   unsigned int m_dmrNetworkModeHang;
-
-  bool         m_fusionNetworkEnabled;
-  std::string  m_fusionNetworkLocalAddress;
-  unsigned short m_fusionNetworkLocalPort;
-  std::string  m_fusionNetworkGatewayAddress;
-  unsigned short m_fusionNetworkGatewayPort;
-  unsigned int m_fusionNetworkModeHang;
-  bool         m_fusionNetworkDebug;
 
   bool         m_p25NetworkEnabled;
   std::string  m_p25GatewayAddress;
