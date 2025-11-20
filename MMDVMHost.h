@@ -71,7 +71,6 @@ private:
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_p25NetModeHang;
   unsigned int    m_pocsagNetModeHang;
-  unsigned int    m_fmNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_dmrTXTimer;
   CTimer          m_cwIdTimer;
@@ -97,7 +96,6 @@ private:
   bool createYSFNetwork();
   bool createP25Network();
   bool createPOCSAGNetwork();
-  bool createFMNetwork();
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);

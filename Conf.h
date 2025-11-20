@@ -90,7 +90,6 @@ public:
   float        getModemDMRTXLevel() const;
   float        getModemP25TXLevel() const;
   float        getModemPOCSAGTXLevel() const;
-  float        getModemFMTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
@@ -194,22 +193,6 @@ public:
   unsigned short getPOCSAGLocalPort() const;
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
-
-  // The FM Network section
-  bool         getFMNetworkEnabled() const;
-  std::string  getFMNetworkProtocol() const;
-  unsigned int getFMNetworkSampleRate() const;
-  std::string  getFMNetworkSquelchFile() const;
-  std::string  getFMGatewayAddress() const;
-  unsigned short getFMGatewayPort() const;
-  std::string  getFMLocalAddress() const;
-  unsigned short getFMLocalPort() const;
-  bool         getFMPreEmphasis() const;
-  bool         getFMDeEmphasis() const;
-  float        getFMTXAudioGain() const;
-  float        getFMRXAudioGain() const;
-  unsigned int getFMNetworkModeHang() const;
-  bool         getFMNetworkDebug() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -320,7 +303,6 @@ private:
   float        m_modemDMRTXLevel;
   float        m_modemP25TXLevel;
   float        m_modemPOCSAGTXLevel;
-  float        m_modemFMTXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemUseCOSAsLockout;
   bool         m_modemTrace;

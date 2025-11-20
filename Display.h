@@ -42,7 +42,6 @@ public:
 	void setLockout();
 	void setError(const char* text);
 	void setQuit();
-	void setFM();
 
 	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	void writeDStarRSSI(unsigned char rssi);

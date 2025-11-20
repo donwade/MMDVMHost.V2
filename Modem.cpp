@@ -90,7 +90,6 @@ const unsigned int BUFFER_LENGTH = 2000U;
 const unsigned char CAP1_DSTAR  = 0x01U;
 const unsigned char CAP1_DMR    = 0x02U;
 const unsigned char CAP1_P25    = 0x08U;
-const unsigned char CAP1_FM     = 0x40U;
 const unsigned char CAP2_POCSAG = 0x01U;
 
 
@@ -109,7 +108,6 @@ m_cwIdTXLevel(0.0F),
 m_dmrTXLevel(0.0F),
 m_p25TXLevel(0.0F),
  m_pocsagTXLevel(0.0F),
-m_fmTXLevel(0.0F),
 m_rfLevel(0.0F),
 m_useCOSAsLockout(useCOSAsLockout),
 m_trace(trace),
@@ -140,8 +138,6 @@ m_txYSFData(1000U, "Modem TX YSF"),
 m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
-m_rxFMData(5000U, "Modem RX FM"),
-m_txFMData(5000U, "Modem TX FM"),
 m_rxSerialData(1000U, "Modem RX Serial"),
 m_txSerialData(1000U, "Modem TX Serial"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
@@ -155,7 +151,6 @@ m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_p25Space(0U),
  m_pocsagSpace(0U),
-m_fmSpace(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -199,7 +194,7 @@ void CModem::setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled)
  	m_pocsagEnabled = pocsagEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagTXLevel, float fmTXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagTXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -476,7 +471,6 @@ void CModem::clock(unsigned int ms)
 
 						m_p25Space    = 0U;
  						m_pocsagSpace = 0U;
-						m_fmSpace     = 0U;
 
 						m_dstarSpace = m_buffer[m_offset + 3U];
 						m_dmrSpace1  = m_buffer[m_offset + 4U];
@@ -513,7 +507,6 @@ void CModem::clock(unsigned int ms)
 						m_dmrSpace1   = m_buffer[m_offset + 4U];
 						m_dmrSpace2   = m_buffer[m_offset + 5U];
 						m_p25Space    = m_buffer[m_offset + 7U];
- 						m_fmSpace     = m_buffer[m_offset + 10U];
 						m_pocsagSpace = m_buffer[m_offset + 11U];
 					}
 					break;
@@ -524,7 +517,6 @@ void CModem::clock(unsigned int ms)
 					m_dmrSpace2   = 0U;
 					m_p25Space    = 0U;
  					m_pocsagSpace = 0U;
-					m_fmSpace     = 0U;
 					break;
 				}
 
@@ -847,20 +839,6 @@ unsigned int CModem::readP25Data(unsigned char* data)
 	return len;
 }
 
-unsigned int CModem::readFMData(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	if (m_rxFMData.isEmpty())
-		return 0U;
-
-	unsigned int len = 0U;
-	m_rxFMData.getData((unsigned char*)&len, sizeof(unsigned int));
-	m_rxFMData.getData(data, len);
-
-	return len;
-}
-
 unsigned int CModem::readTransparentData(unsigned char* data)
 {
 	assert(data != nullptr);
@@ -1006,11 +984,6 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-unsigned int CModem::getFMSpace() const
-{
-	return m_txFMData.freeSpace();
-}
- 
 bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
 {
 	assert(data != nullptr);
@@ -1196,11 +1169,6 @@ bool CModem::hasP25() const
 	return (m_capabilities1 & CAP1_P25) == CAP1_P25;
 }
 
-bool CModem::hasFM() const
-{
-	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
-}
-
 bool CModem::hasPOCSAG() const
 {
 	return (m_capabilities2 & CAP2_POCSAG) == CAP2_POCSAG;
@@ -1298,8 +1266,6 @@ bool CModem::readVersion()
 						::strcat(modeText, " DMR");
 					if (hasP25())
 						::strcat(modeText, " P25");
-					if (hasFM())
-						::strcat(modeText, " FM");
 					if (hasPOCSAG())
 						::strcat(modeText, " POCSAG");
 					LogInfo(modeText);
@@ -1407,8 +1373,6 @@ bool CModem::setConfig1()
 
  	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 
-	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
-
 	buffer[22U] = (unsigned char)m_p25TXHang;
 
  	buffer[24U] = 0x00U;
@@ -1481,8 +1445,6 @@ bool CModem::setConfig2()
 		buffer[4U] |= 0x02U;
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
- 	if (m_fmEnabled)
-		buffer[4U] |= 0x20U;
 
 	buffer[5U] = 0x00U;
 	if (m_pocsagEnabled)
@@ -1502,7 +1464,6 @@ bool CModem::setConfig2()
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
  	buffer[17U] = 0x00U;
 	buffer[18U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
-	buffer[19U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
 	buffer[20U] = 0x00U;
 	buffer[21U] = 0x00U;
 	buffer[22U] = 0x00U;

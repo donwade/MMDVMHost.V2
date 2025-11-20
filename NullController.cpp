@@ -30,11 +30,6 @@ const unsigned char MMDVM_SET_CONFIG  = 0x02U;
 const unsigned char MMDVM_SET_MODE    = 0x03U;
 const unsigned char MMDVM_SET_FREQ    = 0x04U;
 
-const unsigned char MMDVM_FM_PARAMS1 = 0x60U;
-const unsigned char MMDVM_FM_PARAMS2 = 0x61U;
-const unsigned char MMDVM_FM_PARAMS3 = 0x62U;
-const unsigned char MMDVM_FM_PARAMS4 = 0x63U;
-
 const unsigned char MMDVM_ACK = 0x70U;
 const unsigned char MMDVM_NAK = 0x7FU;
 
@@ -82,10 +77,6 @@ int CNullController::write(const unsigned char* buffer, unsigned int length)
 	case MMDVM_SET_CONFIG:
 	case MMDVM_SET_FREQ:
 	case MMDVM_SET_MODE:
-	case MMDVM_FM_PARAMS1:
-	case MMDVM_FM_PARAMS2:
-	case MMDVM_FM_PARAMS3:
-	case MMDVM_FM_PARAMS4:
 		writeAck(buffer[2U]);
 		break;
 	default:

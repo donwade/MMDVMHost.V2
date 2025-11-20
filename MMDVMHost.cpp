@@ -936,7 +936,6 @@ bool CMMDVMHost::createModem()
 	float dmrTXLevel             = m_conf.getModemDMRTXLevel();
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
-	float fmTXLevel              = m_conf.getModemFMTXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
@@ -985,7 +984,6 @@ bool CMMDVMHost::createModem()
 	LogInfo("    DMR TX Level: %.1f%%", dmrTXLevel);
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
-	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
@@ -1007,7 +1005,7 @@ bool CMMDVMHost::createModem()
 
 	m_modem->setPort(port);
 	m_modem->setModeParams(m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dmrTXLevel, p25TXLevel, pocsagTXLevel, fmTXLevel);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dmrTXLevel, p25TXLevel, pocsagTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setP25Params(p25TXHang);

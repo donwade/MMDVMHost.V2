@@ -48,16 +48,11 @@ public:
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	void setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagLevel, float fmTXLevel);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
 	void setTransparentDataParams(unsigned int sendFrameType);
-
-	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
-	void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool linkMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel);
-	void setFMExtParams(const std::string& ack, unsigned int audioBoost);
 
 	bool open();
 
@@ -65,7 +60,6 @@ public:
 	bool hasDMR() const;
 	bool hasP25() const;
 	bool hasPOCSAG() const;
-	bool hasFM() const;
 
 	unsigned int getVersion() const;
 
@@ -74,7 +68,6 @@ public:
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
-	unsigned int readFMData(unsigned char* data);
 
 	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
@@ -82,7 +75,6 @@ public:
 	bool hasYSFSpace() const;
 	bool hasP25Space() const;
 	bool hasPOCSAGSpace() const;
-	unsigned int getFMSpace() const;
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -97,7 +89,6 @@ public:
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
-	bool writeFMData(const unsigned char* data, unsigned int length);
 
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
@@ -141,7 +132,6 @@ private:
 	float                      m_dmrTXLevel;
 	float                      m_p25TXLevel;
 	float                      m_pocsagTXLevel;
-	float                      m_fmTXLevel;
 	float                      m_rfLevel;
 	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
@@ -153,7 +143,6 @@ private:
 	bool                       m_dmrEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_pocsagEnabled;
-	bool                       m_fmEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	IModemPort*                m_port;
@@ -173,8 +162,6 @@ private:
 	CRingBuffer<unsigned char> m_rxP25Data;
 	CRingBuffer<unsigned char> m_txP25Data;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
-	CRingBuffer<unsigned char> m_rxFMData;
-	CRingBuffer<unsigned char> m_txFMData;
 	CRingBuffer<unsigned char> m_rxSerialData;
 	CRingBuffer<unsigned char> m_txSerialData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
@@ -188,7 +175,6 @@ private:
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_p25Space;
 	unsigned int               m_pocsagSpace;
-	unsigned int               m_fmSpace;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
@@ -204,10 +190,6 @@ private:
 	bool setConfig1();
 	bool setConfig2();
 	bool setFrequency();
-	bool setFMCallsignParams();
-	bool setFMAckParams();
-	bool setFMMiscParams();
-	bool setFMExtParams();
 
 	void printDebug();
 

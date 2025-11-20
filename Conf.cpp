@@ -41,12 +41,10 @@ enum class SECTION {
 	DMR,
 	P25,
 	POCSAG,
-	FM,
 	DSTAR_NETWORK,
 	DMR_NETWORK,
 	P25_NETWORK,
 	POCSAG_NETWORK,
-	FM_NETWORK,
 	TFTSERIAL_DISPLAY,
 	HD44780_DISPLAY,
 	NEXTION_DISPLAY,
@@ -107,7 +105,6 @@ m_modemCWIdTXLevel(50.0F),
 m_modemDMRTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
-m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemUseCOSAsLockout(false),
 m_modemTrace(false),
@@ -257,8 +254,6 @@ bool CConf::read()
 				section = SECTION::P25;
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION::POCSAG;
-			else if (::strncmp(buffer, "[FM]", 4U) == 0)
-				section = SECTION::FM;
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 				section = SECTION::DSTAR_NETWORK;
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -267,8 +262,6 @@ bool CConf::read()
 				section = SECTION::P25_NETWORK;
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION::POCSAG_NETWORK;
-			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
-				section = SECTION::FM_NETWORK;
 			else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
 				section = SECTION::TFTSERIAL_DISPLAY;
 			else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
@@ -425,7 +418,7 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemCWIdTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
 			else if (::strcmp(key, "DMRTXLevel") == 0)
@@ -434,8 +427,6 @@ bool CConf::read()
 				m_modemP25TXLevel = float(::atof(value));
 			else if (::strcmp(key, "POCSAGTXLevel") == 0)
 				m_modemPOCSAGTXLevel = float(::atof(value));
-			else if (::strcmp(key, "FMTXLevel") == 0)
-				m_modemFMTXLevel = float(::atof(value));
 			else if (::strcmp(key, "RSSIMappingFile") == 0)
 				m_modemRSSIMappingFile = value;
 			else if (::strcmp(key, "UseCOSAsLockout") == 0)
@@ -960,11 +951,6 @@ float CConf::getModemP25TXLevel() const
 float CConf::getModemPOCSAGTXLevel() const
 {
 	return m_modemPOCSAGTXLevel;
-}
-
-float CConf::getModemFMTXLevel() const
-{
-	return m_modemFMTXLevel;
 }
 
 std::string CConf::getModemRSSIMappingFile () const

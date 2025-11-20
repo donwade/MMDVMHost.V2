@@ -111,8 +111,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::ENABLE_YSF;
 			else if (m_args.at(1U) == "p25")
 				m_command = REMOTE_COMMAND::ENABLE_P25;
-			else if (m_args.at(1U) == "fm")
-				m_command = REMOTE_COMMAND::ENABLE_FM;
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
@@ -124,8 +122,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::DISABLE_YSF;
 			else if (m_args.at(1U) == "p25")
 				m_command = REMOTE_COMMAND::DISABLE_P25;
-			else if (m_args.at(1U) == "fm")
-				m_command = REMOTE_COMMAND::DISABLE_FM;
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
