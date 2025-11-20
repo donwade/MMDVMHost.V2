@@ -96,7 +96,6 @@ private:
   bool createDMRNetwork();
   bool createYSFNetwork();
   bool createP25Network();
-  bool createNXDNNetwork();
   bool createPOCSAGNetwork();
   bool createFMNetwork();
 

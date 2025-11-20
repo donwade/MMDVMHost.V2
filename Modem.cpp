@@ -90,7 +90,6 @@ const unsigned int BUFFER_LENGTH = 2000U;
 const unsigned char CAP1_DSTAR  = 0x01U;
 const unsigned char CAP1_DMR    = 0x02U;
 const unsigned char CAP1_P25    = 0x08U;
-const unsigned char CAP1_NXDN   = 0x10U;
 const unsigned char CAP1_FM     = 0x40U;
 const unsigned char CAP2_POCSAG = 0x01U;
 
@@ -140,8 +139,6 @@ m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
 m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
-m_rxNXDNData(1000U, "Modem RX NXDN"),
-m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 m_rxFMData(5000U, "Modem RX FM"),
 m_txFMData(5000U, "Modem TX FM"),
@@ -202,7 +199,7 @@ void CModem::setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled)
  	m_pocsagEnabled = pocsagEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagTXLevel, float fmTXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -850,20 +847,6 @@ unsigned int CModem::readP25Data(unsigned char* data)
 	return len;
 }
 
-unsigned int CModem::readNXDNData(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	if (m_rxNXDNData.isEmpty())
-		return 0U;
-
-	unsigned char len = 0U;
-	m_rxNXDNData.getData(&len, 1U);
-	m_rxNXDNData.getData(data, len);
-
-	return len;
-}
-
 unsigned int CModem::readFMData(unsigned char* data)
 {
 	assert(data != nullptr);
@@ -1113,31 +1096,6 @@ bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, con
 	return m_port->write(buffer, 31U) != 31;
 }
 
-bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type)
-{
-	assert(m_port != nullptr);
-	assert(source != nullptr);
-	assert(type != nullptr);
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 31U;
-	buffer[2U] = MMDVM_QSO_INFO;
-
-	buffer[3U] = MODE_NXDN;
-
-	::sprintf((char*)(buffer + 4U), "%20.20s", source);
-
-	buffer[24U] = group ? 'G' : 'I';
-
-	::sprintf((char*)(buffer + 25U), "%05u", dest);	// 16-bits
-
-	::memcpy(buffer + 30U, type, 1U);
-
-	return m_port->write(buffer, 31U) != 31;
-}
-
 bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 {
 	assert(m_port != nullptr);
@@ -1310,7 +1268,7 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_P25 | CAP1_NXDN;
+					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_P25 ;
 					m_capabilities2 = CAP2_POCSAG;
 					return true;
 

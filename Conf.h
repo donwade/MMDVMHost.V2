@@ -65,10 +65,6 @@ public:
   std::string  getDMRIdLookupFile() const;
   unsigned int getDMRIdLookupTime() const;
 
-  // The NXDN Id section
-  std::string  getNXDNIdLookupFile() const;
-  unsigned int getNXDNIdLookupTime() const;
-
   // The Modem section
   std::string  getModemProtocol() const;
   std::string  getModemUARTPort() const;
@@ -93,7 +89,6 @@ public:
   float        getModemCWIdTXLevel() const;
   float        getModemDMRTXLevel() const;
   float        getModemP25TXLevel() const;
-  float        getModemNXDNTXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
@@ -190,16 +185,6 @@ public:
   unsigned short getP25LocalPort() const;
   unsigned int getP25NetworkModeHang() const;
   bool         getP25NetworkDebug() const;
-
-  // The NXDN Network section
-  bool         getNXDNNetworkEnabled() const;
-  std::string  getNXDNNetworkProtocol() const;
-  std::string  getNXDNGatewayAddress() const;
-  unsigned short getNXDNGatewayPort() const;
-  std::string  getNXDNLocalAddress() const;
-  unsigned short getNXDNLocalPort() const;
-  unsigned int getNXDNNetworkModeHang() const;
-  bool         getNXDNNetworkDebug() const;
 
   // The POCSAG Network section
   bool         getPOCSAGNetworkEnabled() const;
@@ -334,7 +319,6 @@ private:
   float        m_modemCWIdTXLevel;
   float        m_modemDMRTXLevel;
   float        m_modemP25TXLevel;
-  float        m_modemNXDNTXLevel;
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
   std::string  m_modemRSSIMappingFile;

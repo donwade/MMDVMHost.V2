@@ -48,11 +48,10 @@ public:
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	void setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagLevel, float fmTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
-	void setNXDNParams(unsigned int txHang);
 	void setTransparentDataParams(unsigned int sendFrameType);
 
 	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -75,7 +74,6 @@ public:
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
-	unsigned int readNXDNData(unsigned char* data);
 	unsigned int readFMData(unsigned char* data);
 
 	bool hasDStarSpace() const;
@@ -98,14 +96,12 @@ public:
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
-	bool writeNXDNData(const unsigned char* data, unsigned int length);
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
 	bool writeFMData(const unsigned char* data, unsigned int length);
 
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
-	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
 	bool writePOCSAGInfo(unsigned int ric, const std::string& message);
 	bool writeIPInfo(const std::string& address);
 
@@ -176,8 +172,6 @@ private:
 	CRingBuffer<unsigned char> m_txYSFData;
 	CRingBuffer<unsigned char> m_rxP25Data;
 	CRingBuffer<unsigned char> m_txP25Data;
-	CRingBuffer<unsigned char> m_rxNXDNData;
-	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 	CRingBuffer<unsigned char> m_rxFMData;
 	CRingBuffer<unsigned char> m_txFMData;

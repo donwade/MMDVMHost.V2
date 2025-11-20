@@ -61,12 +61,6 @@ public:
 	void writeP25BER(float ber);
 	void clearP25();
 
-	void writeNXDN(const char* source, bool group, unsigned int dest, const char* type);
-	void writeNXDN(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
-	void writeNXDNRSSI(unsigned char rssi);
-	void writeNXDNBER(float ber);
-	void clearNXDN();
-
 	void writePOCSAG(uint32_t ric, const std::string& message);
 	void clearPOCSAG();
 

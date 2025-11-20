@@ -31,8 +31,6 @@ public:
 
 	static void addP25Sync(unsigned char* data);
 
-	static void addNXDNSync(unsigned char* data);
-
 private:
 };
 

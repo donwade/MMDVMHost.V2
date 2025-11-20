@@ -935,7 +935,6 @@ bool CMMDVMHost::createModem()
 	float cwIdTXLevel            = m_conf.getModemCWIdTXLevel();
 	float dmrTXLevel             = m_conf.getModemDMRTXLevel();
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
-	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
 	bool trace                   = m_conf.getModemTrace();
@@ -985,7 +984,6 @@ bool CMMDVMHost::createModem()
 	LogInfo("    CW Id TX Level: %.1f%%", cwIdTXLevel);
 	LogInfo("    DMR TX Level: %.1f%%", dmrTXLevel);
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
-	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
@@ -1009,7 +1007,7 @@ bool CMMDVMHost::createModem()
 
 	m_modem->setPort(port);
 	m_modem->setModeParams(m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dmrTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dmrTXLevel, p25TXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setP25Params(p25TXHang);
@@ -1232,9 +1230,6 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 			break;
 		case MODE_P25:
 			while (m_modem->readP25Data(data) > 0U);
-			break;
-		case MODE_NXDN:
-			while (m_modem->readNXDNData(data) > 0U);
 			break;
  		default:
 			break;

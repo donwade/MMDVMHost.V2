@@ -35,19 +35,16 @@ enum class SECTION {
 	LOG,
 	CWID,
 	DMRID_LOOKUP,
-	NXDNID_LOOKUP,
 	MODEM,
 	TRANSPARENT,
 	DSTAR,
 	DMR,
 	P25,
-	NXDN,
 	POCSAG,
 	FM,
 	DSTAR_NETWORK,
 	DMR_NETWORK,
 	P25_NETWORK,
-	NXDN_NETWORK,
 	POCSAG_NETWORK,
 	FM_NETWORK,
 	TFTSERIAL_DISPLAY,
@@ -109,7 +106,6 @@ m_modemRXLevel(50.0F),
 m_modemCWIdTXLevel(50.0F),
 m_modemDMRTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
-m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
@@ -249,8 +245,6 @@ bool CConf::read()
 				section = SECTION::CWID;
 			else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
 				section = SECTION::DMRID_LOOKUP;
-			else if (::strncmp(buffer, "[NXDN Id Lookup]", 16U) == 0)
-				section = SECTION::NXDNID_LOOKUP;
 			else if (::strncmp(buffer, "[Modem]", 7U) == 0)
 				section = SECTION::MODEM;
 			else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
@@ -261,8 +255,6 @@ bool CConf::read()
 				section = SECTION::DMR;
 			else if (::strncmp(buffer, "[P25]", 5U) == 0)
 				section = SECTION::P25;
-			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
-				section = SECTION::NXDN;
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION::POCSAG;
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
@@ -273,8 +265,6 @@ bool CConf::read()
 				section = SECTION::DMR_NETWORK;
 			else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 				section = SECTION::P25_NETWORK;
-			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
-				section = SECTION::NXDN_NETWORK;
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION::POCSAG_NETWORK;
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
@@ -435,15 +425,13 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDMRTXLevel = m_modemP25TXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
 			else if (::strcmp(key, "DMRTXLevel") == 0)
 				m_modemDMRTXLevel = float(::atof(value));
 			else if (::strcmp(key, "P25TXLevel") == 0)
 				m_modemP25TXLevel = float(::atof(value));
-			else if (::strcmp(key, "NXDNTXLevel") == 0)
-				m_modemNXDNTXLevel = float(::atof(value));
 			else if (::strcmp(key, "POCSAGTXLevel") == 0)
 				m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "FMTXLevel") == 0)
@@ -967,11 +955,6 @@ float CConf::getModemDMRTXLevel() const
 float CConf::getModemP25TXLevel() const
 {
 	return m_modemP25TXLevel;
-}
-
-float CConf::getModemNXDNTXLevel() const
-{
-	return m_modemNXDNTXLevel;
 }
 
 float CConf::getModemPOCSAGTXLevel() const

@@ -98,7 +98,6 @@ char           m_displayBuffer2[BUFFER_MAX_LEN];
 const unsigned int DSTAR_RSSI_COUNT = 3U;		// 3 * 420ms = 1260ms
 const unsigned int DMR_RSSI_COUNT   = 4U;		// 4 * 360ms = 1440ms
 const unsigned int P25_RSSI_COUNT   = 7U;		// 7 * 180ms = 1260ms
-const unsigned int NXDN_RSSI_COUNT  = 28U;		// 28 * 40ms = 1120ms
 
 CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
 CDisplay(),
@@ -194,7 +193,6 @@ void CLCDproc::setIdleInt()
 		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
-		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Idle", m_cols - 3, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
@@ -212,7 +210,6 @@ void CLCDproc::setErrorInt(const char* text)
 		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
-		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Error", m_cols - 4, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
@@ -228,7 +225,6 @@ void CLCDproc::setLockoutInt()
 		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
-		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Lockout", m_cols - 6, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
@@ -246,7 +242,6 @@ void CLCDproc::setQuitInt()
 		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
-		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Stopped", m_cols - 6, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
@@ -664,20 +659,5 @@ void CLCDproc::defineScreens()
 	socketPrintf(m_socketfd, "widget_set P25 Line4 4 2 15 2 h 3 \" \"");
 */
 
-	// The NXDN Screen
-
-	socketPrintf(m_socketfd, "screen_add NXDN");
-	socketPrintf(m_socketfd, "screen_set NXDN -name NXDN -heartbeat on -priority hidden -backlight on");
-
-	socketPrintf(m_socketfd, "widget_add NXDN Mode string");
-	socketPrintf(m_socketfd, "widget_add NXDN Line2 scroller");
-	socketPrintf(m_socketfd, "widget_add NXDN Line3 scroller");
-	socketPrintf(m_socketfd, "widget_add NXDN Line4 scroller");
-
-/* Do we need to pre-populate the values??
-	socketPrintf(m_socketfd, "widget_set NXDN Line3 2 1 15 1 h 3 \"Listening\"");
-	socketPrintf(m_socketfd, "widget_set NXDN Line3 3 1 15 1 h 3 \" \"");
-	socketPrintf(m_socketfd, "widget_set NXDN Line4 4 2 15 2 h 3 \" \"");
-*/
 	m_screensDefined = true;
 }
