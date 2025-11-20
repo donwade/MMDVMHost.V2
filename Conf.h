@@ -61,9 +61,9 @@ public:
   unsigned int getCWIdTime() const;
   std::string  getCWIdCallsign() const;
 
-  // The DMR Id section
-  std::string  getDMRIdLookupFile() const;
-  unsigned int getDMRIdLookupTime() const;
+  // The P25 Id section
+  std::string  getP25IdLookupFile() const;
+  unsigned int getP25IdLookupTime() const;
 
   // The Modem section
   std::string  getModemProtocol() const;
@@ -254,8 +254,8 @@ private:
   unsigned int m_cwIdTime;
   std::string  m_cwIdCallsign;
 
-  std::string  m_dmrIdLookupFile;
-  unsigned int m_dmrIdLookupTime;
+  std::string  m_P25IdLookupFile;
+  unsigned int m_P25IdLookupTime;
 
   std::string  m_modemProtocol;
   std::string  m_modemUARTPort;

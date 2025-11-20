@@ -80,7 +80,7 @@ private:
   bool            m_p25Enabled;
   bool            m_pocsagEnabled;
   unsigned int    m_cwIdTime;
-  CDMRLookup*     m_dmrLookup;
+  CDMRLookup*     m_P25Lookup;
   std::string     m_callsign;
   unsigned int    m_id;
   std::string     m_cwCallsign;

@@ -77,8 +77,8 @@ m_logFileRotate(true),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
 m_cwIdCallsign(),
-m_dmrIdLookupFile(),
-m_dmrIdLookupTime(0U),
+m_P25IdLookupFile(),
+m_P25IdLookupTime(0U),
 m_modemProtocol("uart"),
 m_modemUARTPort(),
 m_modemUARTSpeed(115200U),
@@ -367,9 +367,9 @@ bool CConf::read()
 			}
 		} else if (section == SECTION::DMRID_LOOKUP) {
 			if (::strcmp(key, "File") == 0)
-				m_dmrIdLookupFile = value;
+				m_P25IdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
-				m_dmrIdLookupTime = (unsigned int)::atoi(value);
+				m_P25IdLookupTime = (unsigned int)::atoi(value);
 		} else if (section == SECTION::MODEM) {
 			if (::strcmp(key, "Protocol") == 0)
 				m_modemProtocol = value;
@@ -817,14 +817,14 @@ std::string CConf::getCWIdCallsign() const
 	return m_cwIdCallsign;
 }
 
-std::string CConf::getDMRIdLookupFile() const
+std::string CConf::getP25IdLookupFile() const
 {
-	return m_dmrIdLookupFile;
+	return m_P25IdLookupFile;
 }
 
-unsigned int CConf::getDMRIdLookupTime() const
+unsigned int CConf::getP25IdLookupTime() const
 {
-	return m_dmrIdLookupTime;
+	return m_P25IdLookupTime;
 }
 
 std::string CConf::getModemProtocol() const

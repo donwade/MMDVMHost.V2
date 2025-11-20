@@ -156,7 +156,7 @@ m_dmrEnabled(false),
 m_p25Enabled(false),
 m_pocsagEnabled(false),
 m_cwIdTime(0U),
-m_dmrLookup(nullptr),
+m_P25Lookup(nullptr),
 m_callsign(),
 m_id(0U),
 m_cwCallsign(),
@@ -377,17 +377,17 @@ int CMMDVMHost::run()
 	}
 
 	// For DMR and P25 we try to map IDs to callsigns
-	if (m_dmrEnabled || m_p25Enabled) {
-		std::string lookupFile  = m_conf.getDMRIdLookupFile();
-		unsigned int reloadTime = m_conf.getDMRIdLookupTime();
+	if (m_p25Enabled) {
+		std::string lookupFile  = m_conf.getP25IdLookupFile();
+		unsigned int reloadTime = m_conf.getP25IdLookupTime();
 
-		LogInfo("DMR Id Lookups");
+		LogInfo("P25 Id Lookups");
 		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		if (reloadTime > 0U)
 			LogInfo("    Reload: %u hours", reloadTime);
 
-		m_dmrLookup = new CDMRLookup(lookupFile, reloadTime);
-		m_dmrLookup->read();
+		m_P25Lookup = new CDMRLookup(lookupFile, reloadTime);
+		m_P25Lookup->read();
 	}
 
 	LogInfo("Starting protocol handlers");
@@ -492,7 +492,7 @@ int CMMDVMHost::run()
 				break;
 		}
 
-		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter, ovcm, protect);
+		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_P25Lookup, rssi, jitter, ovcm, protect);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -515,7 +515,7 @@ int CMMDVMHost::run()
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
-		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
+		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_P25Lookup, remoteGateway, rssi);
 	}
 
 	CTimer pocsagTimer(1000U, 30U);
@@ -777,8 +777,8 @@ int CMMDVMHost::run()
 			m_modeTimer.clock(ms);
 
 		if (m_reload) {
-			if (m_dmrLookup != nullptr)
-				m_dmrLookup->reload();
+			if (m_P25Lookup != nullptr)
+				m_P25Lookup->reload();
 
 			m_reload = false;
 		}
@@ -866,8 +866,8 @@ int CMMDVMHost::run()
 
 	setMode(MODE_QUIT);
 
-	if (m_dmrLookup != nullptr)
-		m_dmrLookup->stop();
+	if (m_P25Lookup != nullptr)
+		m_P25Lookup->stop();
 
 	LogInfo("Closing network connections");
 
