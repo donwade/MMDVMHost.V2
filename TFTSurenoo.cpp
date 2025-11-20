@@ -98,7 +98,6 @@ static const struct layoutdef Layout[] = {
 
 #define STR_CRLF		"\x0D\x0A"
 #define STR_DMR			"DMR"
-#define STR_DSTAR		"D-STAR"
 #define STR_MMDVM		"MMDVM"
 #define STR_P25			"P25"
 

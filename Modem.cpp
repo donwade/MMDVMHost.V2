@@ -49,11 +49,6 @@ const unsigned char MMDVM_SET_FREQ    = 0x04U;
 
 const unsigned char MMDVM_SEND_CWID   = 0x0AU;
 
-const unsigned char MMDVM_DSTAR_HEADER = 0x10U;
-const unsigned char MMDVM_DSTAR_DATA   = 0x11U;
-const unsigned char MMDVM_DSTAR_LOST   = 0x12U;
-const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
-
 const unsigned char MMDVM_DMR_DATA1   = 0x18U;
 const unsigned char MMDVM_DMR_LOST1   = 0x19U;
 const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
@@ -87,7 +82,6 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-const unsigned char CAP1_DSTAR  = 0x01U;
 const unsigned char CAP1_DMR    = 0x02U;
 const unsigned char CAP1_P25    = 0x08U;
 const unsigned char CAP2_POCSAG = 0x01U;
@@ -115,7 +109,6 @@ m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_pocsagFrequency(0U),
-m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_p25Enabled(false),
 m_pocsagEnabled(false),
@@ -127,8 +120,6 @@ m_length(0U),
 m_offset(0U),
 m_state(SERIAL_STATE::START),
 m_type(0U),
-m_rxDStarData(1000U, "Modem RX D-Star"),
-m_txDStarData(1000U, "Modem TX D-Star"),
 m_rxDMRData1(1000U, "Modem RX DMR1"),
 m_rxDMRData2(1000U, "Modem RX DMR2"),
 m_txDMRData1(1000U, "Modem TX DMR1"),
@@ -146,7 +137,6 @@ m_sendTransparentDataFrameType(0U),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
-m_dstarSpace(0U),
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_p25Space(0U),
@@ -295,57 +285,6 @@ void CModem::clock(unsigned int ms)
 	} else {
 		// type == OK
 		switch (m_type) {
-			case MMDVM_DSTAR_HEADER: {
-					if (m_trace)
-						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
-
-					unsigned char data = m_length - m_offset + 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_HEADER;
-					m_rxDStarData.addData(&data, 1U);
-
-					m_rxDStarData.addData(m_buffer + m_offset, m_length - m_offset);
-				}
-				break;
-
-			case MMDVM_DSTAR_DATA: {
-					if (m_trace)
-						CUtils::dump(1U, "RX D-Star Data", m_buffer, m_length);
-
-					unsigned char data = m_length - m_offset + 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_DATA;
-					m_rxDStarData.addData(&data, 1U);
-
-					m_rxDStarData.addData(m_buffer + m_offset, m_length - m_offset);
-				}
-				break;
-
-			case MMDVM_DSTAR_LOST: {
-					if (m_trace)
-						CUtils::dump(1U, "RX D-Star Lost", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDStarData.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_DSTAR_EOT: {
-					if (m_trace)
-						CUtils::dump(1U, "RX D-Star EOT", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_EOT;
-					m_rxDStarData.addData(&data, 1U);
-				}
-				break;
 
 			case MMDVM_DMR_DATA1: {
 					if (m_trace)
@@ -472,7 +411,6 @@ void CModem::clock(unsigned int ms)
 						m_p25Space    = 0U;
  						m_pocsagSpace = 0U;
 
-						m_dstarSpace = m_buffer[m_offset + 3U];
 						m_dmrSpace1  = m_buffer[m_offset + 4U];
 						m_dmrSpace2  = m_buffer[m_offset + 5U];
 
@@ -503,7 +441,6 @@ void CModem::clock(unsigned int ms)
 							LogError("MMDVM DAC levels have overflowed");
 						m_cd = (m_buffer[m_offset + 1U] & 0x40U) == 0x40U;
 
-						m_dstarSpace  = m_buffer[m_offset + 3U];
 						m_dmrSpace1   = m_buffer[m_offset + 4U];
 						m_dmrSpace2   = m_buffer[m_offset + 5U];
 						m_p25Space    = m_buffer[m_offset + 7U];
@@ -512,7 +449,6 @@ void CModem::clock(unsigned int ms)
 					break;
 
 				default:
-					m_dstarSpace  = 0U;
 					m_dmrSpace1   = 0U;
 					m_dmrSpace2   = 0U;
 					m_p25Space    = 0U;
@@ -624,43 +560,6 @@ void CModem::clock(unsigned int ms)
 	if (!m_playoutTimer.hasExpired())
 		return;
 
-	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
-		unsigned char buffer[4U];
-		m_txDStarData.peek(buffer, 4U);
-
-		if ((buffer[3U] == MMDVM_DSTAR_HEADER && m_dstarSpace > 4U) ||
-			(buffer[3U] == MMDVM_DSTAR_DATA   && m_dstarSpace > 1U) ||
-			(buffer[3U] == MMDVM_DSTAR_EOT    && m_dstarSpace > 1U)) {
-			unsigned char len = 0U;
-			m_txDStarData.getData(&len, 1U);
-			m_txDStarData.getData(m_buffer, len);
-
-			switch (buffer[3U]) {
-			case MMDVM_DSTAR_HEADER:
-				if (m_trace)
-					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
-				m_dstarSpace -= 4U;
-				break;
-			case MMDVM_DSTAR_DATA:
-				if (m_trace)
-					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
-				m_dstarSpace -= 1U;
-				break;
-			default:
-				if (m_trace)
-					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
-				m_dstarSpace -= 1U;
-				break;
-			}
-
-			int ret = m_port->write(m_buffer, len);
-			if (ret != int(len))
-				LogWarning("Error when writing D-Star data to the MMDVM");
-
-			m_playoutTimer.start();
-		}
-	}
-
 	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
 		unsigned char len = 0U;
 		m_txDMRData1.getData(&len, 1U);
@@ -767,20 +666,6 @@ void CModem::close()
 	::LogMessage("Closing the MMDVM");
 
 	m_port->close();
-}
-
-unsigned int CModem::readDStarData(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	if (m_rxDStarData.isEmpty())
-		return 0U;
-
-	unsigned char len = 0U;
-	m_rxDStarData.getData(&len, 1U);
-	m_rxDStarData.getData(data, len);
-
-	return len;
 }
 
 unsigned int CModem::readDMRData1(unsigned char* data)
@@ -1154,11 +1039,6 @@ bool CModem::hasError() const
 	return m_error;
 }
 
-bool CModem::hasDStar() const
-{
-	return (m_capabilities1 & CAP1_DSTAR) == CAP1_DSTAR;
-}
-
 bool CModem::hasDMR() const
 {
 	return (m_capabilities1 & CAP1_DMR) == CAP1_DMR;
@@ -1236,7 +1116,7 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_P25 ;
+					m_capabilities1 = CAP1_DMR | CAP1_P25 ;
 					m_capabilities2 = CAP2_POCSAG;
 					return true;
 
@@ -1260,8 +1140,6 @@ bool CModem::readVersion()
 					m_capabilities2 = m_buffer[5U];
 					char modeText[100U];
 					::strcpy(modeText, "Modes:");
-					if (hasDStar())
-						::strcat(modeText, " D-Star");
 					if (hasDMR())
 						::strcat(modeText, " DMR");
 					if (hasP25())
@@ -1342,8 +1220,6 @@ bool CModem::setConfig1()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
-	if (m_dstarEnabled)
-		buffer[4U] |= 0x01U;
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
 	if (m_p25Enabled)
@@ -1439,8 +1315,6 @@ bool CModem::setConfig2()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
-	if (m_dstarEnabled)
-		buffer[4U] |= 0x01U;
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
 	if (m_p25Enabled)

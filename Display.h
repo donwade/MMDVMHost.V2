@@ -43,11 +43,6 @@ public:
 	void setError(const char* text);
 	void setQuit();
 
-	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-	void writeDStarRSSI(unsigned char rssi);
-	void writeDStarBER(float ber);
-	void clearDStar();
-
 	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	void writeDMR(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	void writeDMRRSSI(unsigned int slotNo, unsigned char rssi);

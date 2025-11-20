@@ -95,7 +95,6 @@ bool           m_connected(false);
 char           m_displayBuffer1[BUFFER_MAX_LEN];
 char           m_displayBuffer2[BUFFER_MAX_LEN];
 
-const unsigned int DSTAR_RSSI_COUNT = 3U;		// 3 * 420ms = 1260ms
 const unsigned int DMR_RSSI_COUNT   = 4U;		// 4 * 360ms = 1440ms
 const unsigned int P25_RSSI_COUNT   = 7U;		// 7 * 180ms = 1260ms
 
@@ -190,7 +189,6 @@ void CLCDproc::setIdleInt()
 	m_clockDisplayTimer.start();          // Start the clock display in IDLE only
 
 	if (m_screensDefined) {
-		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Idle", m_cols - 3, m_rows);
@@ -207,7 +205,6 @@ void CLCDproc::setErrorInt(const char* text)
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_screensDefined) {
-		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Error", m_cols - 4, m_rows);
@@ -222,7 +219,6 @@ void CLCDproc::setLockoutInt()
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_screensDefined) {
-		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Lockout", m_cols - 6, m_rows);
@@ -239,7 +235,6 @@ void CLCDproc::setQuitInt()
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_screensDefined) {
-		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
 		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Stopped", m_cols - 6, m_rows);
@@ -607,16 +602,6 @@ void CLCDproc::defineScreens()
 	socketPrintf(m_socketfd, "widget_set Status DMRNumber %u 1 %u", m_cols - 7, m_dmrid);
 	socketPrintf(m_socketfd, "widget_set Status Title 1 %u MMDVM", m_rows);
 	socketPrintf(m_socketfd, "widget_set Status Status %u %u Idle", m_cols - 3, m_rows);
-
-	// The DStar Screen
-
-	socketPrintf(m_socketfd, "screen_add DStar");
-	socketPrintf(m_socketfd, "screen_set DStar -name DStar -heartbeat on -priority hidden -backlight on");
-
-	socketPrintf(m_socketfd, "widget_add DStar Mode string");
-	socketPrintf(m_socketfd, "widget_add DStar Line2 scroller");
-	socketPrintf(m_socketfd, "widget_add DStar Line3 scroller");
-	socketPrintf(m_socketfd, "widget_add DStar Line4 scroller");
 
 /* Do we need to pre-populate the values??
 	socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 15 2 h 3 \"Listening\"");

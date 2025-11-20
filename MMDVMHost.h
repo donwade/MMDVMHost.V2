@@ -91,7 +91,6 @@ private:
 
   void readParams();
   bool createModem();
-  bool createDStarNetwork();
   bool createDMRNetwork();
   bool createYSFNetwork();
   bool createP25Network();

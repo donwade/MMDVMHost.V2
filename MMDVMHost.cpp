@@ -1551,7 +1551,6 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 {
 	str = "";
 
-	std::string dstarReflector;
 	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != nullptr)) ? m_conf.getDMRNetworkRemoteAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != nullptr)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
  }

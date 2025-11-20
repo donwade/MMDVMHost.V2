@@ -22,8 +22,6 @@
 class CSync
 {
 public:
-	static void addDStarSync(unsigned char* data);
-
 	static void addDMRDataSync(unsigned char* data, bool duplex);
 	static void addDMRAudioSync(unsigned char* data, bool duplex);
 

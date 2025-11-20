@@ -34,8 +34,6 @@ const unsigned char TAG_DATA   = 0x01U;
 const unsigned char TAG_LOST   = 0x02U;
 const unsigned char TAG_EOT    = 0x03U;
 
-const unsigned int  DSTAR_MODEM_DATA_LEN = 220U;
-
 enum class HW_TYPE {
 	MMDVM,
 	DVMEGA,
@@ -80,12 +78,6 @@ enum class DMR_OVCM {
 	TX_ON,
 	ON,
 	FORCE_OFF
-};
-
-enum class DSTAR_ACK {
-	BER,
-	RSSI,
-	SMETER
 };
 
 #endif

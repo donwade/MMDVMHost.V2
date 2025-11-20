@@ -92,8 +92,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::MODE_IDLE;
 			else if (m_args.at(1U) == "lockout")
 				m_command = REMOTE_COMMAND::MODE_LOCKOUT;
-			else if (m_args.at(1U) == "d-star")
-				m_command = REMOTE_COMMAND::MODE_DSTAR;
 			else if (m_args.at(1U) == "dmr")
 				m_command = REMOTE_COMMAND::MODE_DMR;
 			else if (m_args.at(1U) == "ysf")
@@ -103,9 +101,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
-			if (m_args.at(1U) == "dstar")
-				m_command = REMOTE_COMMAND::ENABLE_DSTAR;
-			else if (m_args.at(1U) == "dmr")
+		    if (m_args.at(1U) == "dmr")
 				m_command = REMOTE_COMMAND::ENABLE_DMR;
 			else if (m_args.at(1U) == "ysf")
 				m_command = REMOTE_COMMAND::ENABLE_YSF;
@@ -114,9 +110,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
-			if (m_args.at(1U) == "dstar")
-				m_command = REMOTE_COMMAND::DISABLE_DSTAR;
-			else if (m_args.at(1U) == "dmr")
+			if (m_args.at(1U) == "dmr")
 				m_command = REMOTE_COMMAND::DISABLE_DMR;
 			else if (m_args.at(1U) == "ysf")
 				m_command = REMOTE_COMMAND::DISABLE_YSF;
@@ -183,7 +177,6 @@ unsigned int CRemoteControl::getArgCount() const
 	switch (m_command) {
 		case REMOTE_COMMAND::MODE_IDLE:
 		case REMOTE_COMMAND::MODE_LOCKOUT:
-		case REMOTE_COMMAND::MODE_DSTAR:
 		case REMOTE_COMMAND::MODE_DMR:
 		case REMOTE_COMMAND::MODE_YSF:
 		case REMOTE_COMMAND::MODE_P25:
@@ -204,7 +197,6 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 	switch (m_command) {
 		case REMOTE_COMMAND::MODE_IDLE:
 		case REMOTE_COMMAND::MODE_LOCKOUT:
-		case REMOTE_COMMAND::MODE_DSTAR:
 		case REMOTE_COMMAND::MODE_DMR:
 		case REMOTE_COMMAND::MODE_YSF:
 		case REMOTE_COMMAND::MODE_P25:

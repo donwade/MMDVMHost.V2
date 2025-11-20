@@ -56,20 +56,17 @@ public:
 
 	bool open();
 
-	bool hasDStar() const;
 	bool hasDMR() const;
 	bool hasP25() const;
 	bool hasPOCSAG() const;
 
 	unsigned int getVersion() const;
 
-	unsigned int readDStarData(unsigned char* data);
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
 
-	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
@@ -83,7 +80,6 @@ public:
 	bool hasError() const;
 
 	bool writeConfig();
-	bool writeDStarData(const unsigned char* data, unsigned int length);
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
 	bool writeYSFData(const unsigned char* data, unsigned int length);
@@ -139,7 +135,6 @@ private:
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
 	unsigned int               m_pocsagFrequency;
-	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_pocsagEnabled;
@@ -151,8 +146,6 @@ private:
 	unsigned int               m_offset;
 	SERIAL_STATE               m_state;
 	unsigned char              m_type;
-	CRingBuffer<unsigned char> m_rxDStarData;
-	CRingBuffer<unsigned char> m_txDStarData;
 	CRingBuffer<unsigned char> m_rxDMRData1;
 	CRingBuffer<unsigned char> m_rxDMRData2;
 	CRingBuffer<unsigned char> m_txDMRData1;
@@ -170,7 +163,6 @@ private:
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
-	unsigned int               m_dstarSpace;
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_p25Space;

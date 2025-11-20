@@ -102,19 +102,6 @@ public:
   unsigned short getTransparentLocalPort() const;
   unsigned int getTransparentSendFrameType() const;
 
-  // The D-Star section
-  bool         getDStarEnabled() const;
-  std::string  getDStarModule() const;
-  bool         getDStarSelfOnly() const;
-  std::vector<std::string> getDStarBlackList() const;
-  std::vector<std::string> getDStarWhiteList() const;
-  bool         getDStarAckReply() const;
-  unsigned int getDStarAckTime() const;
-  DSTAR_ACK    getDStarAckMessage() const;
-  bool         getDStarErrorReply() const;
-  bool         getDStarRemoteGateway() const;
-  unsigned int getDStarModeHang() const;
-
   // The DMR section
   bool         getDMREnabled() const;
   DMR_BEACONS  getDMRBeacons() const;
@@ -150,16 +137,7 @@ public:
   // The POCSAG section
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
-
  
-  // The D-Star Network section
-  bool         getDStarNetworkEnabled() const;
-  std::string  getDStarGatewayAddress() const;
-  unsigned short getDStarGatewayPort() const;
-  std::string  getDStarLocalAddress() const;
-  unsigned short getDStarLocalPort() const;
-  unsigned int getDStarNetworkModeHang() const;
-  bool         getDStarNetworkDebug() const;
 
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;

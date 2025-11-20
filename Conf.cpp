@@ -37,11 +37,9 @@ enum class SECTION {
 	DMRID_LOOKUP,
 	MODEM,
 	TRANSPARENT,
-	DSTAR,
 	DMR,
 	P25,
 	POCSAG,
-	DSTAR_NETWORK,
 	DMR_NETWORK,
 	P25_NETWORK,
 	POCSAG_NETWORK,
@@ -246,16 +244,12 @@ bool CConf::read()
 				section = SECTION::MODEM;
 			else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
 				section = SECTION::TRANSPARENT;
-			else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
-				section = SECTION::DSTAR;
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
 				section = SECTION::DMR;
 			else if (::strncmp(buffer, "[P25]", 5U) == 0)
 				section = SECTION::P25;
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION::POCSAG;
-			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
-				section = SECTION::DSTAR_NETWORK;
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
 				section = SECTION::DMR_NETWORK;
 			else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
