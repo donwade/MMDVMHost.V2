@@ -74,16 +74,6 @@ void CCASTInfo::setQuitInt()
 {
 }
 
-void CCASTInfo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
-{
-   if (m_modem != nullptr)
-        m_modem->writeDMRInfo(slotNo, src, group, dst, type);
-}
-
-void CCASTInfo::clearDMRInt(unsigned int slotNo)
-{
-}
-
 void CCASTInfo::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
     if (m_modem != nullptr)

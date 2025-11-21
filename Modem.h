@@ -47,9 +47,8 @@ public:
 
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	void setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled);
+	void setModeParams(bool p25Enabled, bool pocsagEnabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float p25TXLevel, float pocsagLevel);
-	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
 	void setTransparentDataParams(unsigned int sendFrameType);
@@ -115,14 +114,12 @@ public:
 
 private:
 	unsigned int               m_protocolVersion;
-	unsigned int               m_dmrColorCode;
 	unsigned int               m_p25TXHang;
- 	bool                       m_duplex;
+	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
 	bool                       m_pttInvert;
 	unsigned int               m_txDelay;
-	unsigned int               m_dmrDelay;
 	float                      m_rxLevel;
 	float                      m_cwIdTXLevel;
 	float                      m_dmrTXLevel;
@@ -135,7 +132,6 @@ private:
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
 	unsigned int               m_pocsagFrequency;
-	bool                       m_dmrEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_pocsagEnabled;
 	int                        m_rxDCOffset;
@@ -163,8 +159,6 @@ private:
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
-	unsigned int               m_dmrSpace1;
-	unsigned int               m_dmrSpace2;
 	unsigned int               m_p25Space;
 	unsigned int               m_pocsagSpace;
 	bool                       m_tx;

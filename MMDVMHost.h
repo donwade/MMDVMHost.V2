@@ -25,16 +25,16 @@
 ///#include "DStarNetwork.h"
 ///#include "NXDNNetwork.h"
 ///#include "DStarControl.h"
-#include "DMRControl.h"
+//#include "DMRControl.h"
 ///#include "YSFControl.h"
 #include "P25Control.h"
 ///#include "NXDNControl.h"
 ///#include "NXDNLookup.h"
 ///#include "YSFNetwork.h"
 #include "P25Network.h"
-#include "DMRNetwork.h"
+//#include "DMRNetwork.h"
 ///#include "FMNetwork.h"
-#include "DMRLookup.h"
+#include "P25Lookup.h"
 ///#include "FMControl.h"
 #include "Display.h"
 #include "Timer.h"
@@ -58,10 +58,8 @@ public:
 private:
   CConf           m_conf;
   CModem*         m_modem;
-  CDMRControl*    m_dmr;
   CP25Control*    m_p25;
   CPOCSAGControl* m_pocsag;
-  IDMRNetwork*    m_dmrNetwork;
   CP25Network*    m_p25Network;
   CPOCSAGNetwork* m_pocsagNetwork;
   CDisplay*       m_display;
@@ -76,7 +74,6 @@ private:
   CTimer          m_cwIdTimer;
   bool            m_duplex;
   unsigned int    m_timeout;
-  bool            m_dmrEnabled;
   bool            m_p25Enabled;
   bool            m_pocsagEnabled;
   unsigned int    m_cwIdTime;

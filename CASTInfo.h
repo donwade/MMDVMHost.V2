@@ -42,9 +42,6 @@ protected:
 	virtual void setLockoutInt();
 	virtual void setQuitInt();
 
-	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-	virtual void clearDMRInt(unsigned int slotNo);
-
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void clearP25Int();
 

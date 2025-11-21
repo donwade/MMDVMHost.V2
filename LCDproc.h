@@ -33,7 +33,7 @@
 class CLCDproc : public CDisplay
 {
 public:
-	CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle);
+	CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, bool displayClock, bool utc, bool duplex, bool dimOnIdle);
 	virtual ~CLCDproc();
 
 	virtual bool open();
@@ -46,10 +46,6 @@ protected:
 	virtual void setLockoutInt();
 	virtual void setQuitInt();
   
-	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi); 
-	virtual void clearDMRInt(unsigned int slotNo);
-
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void writeP25RSSIInt(unsigned char rssi); 
 	virtual void clearP25Int();
@@ -67,12 +63,10 @@ private:
 	unsigned int m_port;
 	unsigned short m_localPort;
 	std::string  m_callsign;
-	unsigned int m_dmrid;
 	bool         m_displayClock;
 	bool         m_utc;
 	bool         m_duplex;
 	bool         m_dimOnIdle;
-	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;
 	unsigned int m_rssiCount1; 
 	unsigned int m_rssiCount2; 

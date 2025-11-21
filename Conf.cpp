@@ -112,25 +112,11 @@ m_transparentRemoteAddress(),
 m_transparentRemotePort(0U),
 m_transparentLocalPort(0U),
 m_transparentSendFrameType(0U),
-m_dmrEnabled(false),
-m_dmrBeacons(DMR_BEACONS::OFF),
-m_dmrBeaconInterval(60U),
-m_dmrBeaconDuration(3U),
-m_dmrId(0U),
-m_dmrColorCode(2U),
-m_dmrSelfOnly(false),
-m_dmrEmbeddedLCOnly(false),
-m_dmrDumpTAData(true),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrWhiteList(),
 m_dmrSlot1TGWhiteList(),
 m_dmrSlot2TGWhiteList(),
-m_dmrCallHang(10U),
-m_dmrTXHang(4U),
-m_dmrModeHang(10U),
-m_dmrOVCM(DMR_OVCM::OFF),
-m_dmrProtect(false),
 m_p25Enabled(false),
 m_p25Id(0U),
 m_p25NAC(0x293U),
@@ -141,19 +127,6 @@ m_p25TXHang(5U),
 m_p25ModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
-m_dmrNetworkEnabled(false),
-m_dmrNetworkType("Gateway"),
-m_dmrNetworkRemoteAddress(),
-m_dmrNetworkRemotePort(0U),
-m_dmrNetworkLocalAddress(),
-m_dmrNetworkLocalPort(0U),
-m_dmrNetworkPassword(),
-m_dmrNetworkOptions(),
-m_dmrNetworkDebug(false),
-m_dmrNetworkJitter(360U),
-m_dmrNetworkSlot1(true),
-m_dmrNetworkSlot2(true),
-m_dmrNetworkModeHang(3U),
 m_p25NetworkEnabled(false),
 m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
@@ -308,18 +281,17 @@ bool CConf::read()
 					value[i] = ::toupper(value[i]);
 				m_cwIdCallsign = m_callsign = value;
 			} else if (::strcmp(key, "Id") == 0)
-				m_id = m_p25Id = m_dmrId = (unsigned int)::atoi(value);
+				m_id = m_p25Id = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Timeout") == 0)
 				m_timeout = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Duplex") == 0)
 				m_duplex = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
-				m_dmrNetworkModeHang = m_p25NetworkModeHang = 
-				m_dmrModeHang      = m_p25ModeHang        = (unsigned int)::atoi(value);
+				m_p25NetworkModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RFModeHang") == 0)
-				m_dmrModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
+				m_p25ModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NetModeHang") == 0)
-				m_dmrNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
+				m_p25NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Display") == 0)
 				m_display = value;
 			else if (::strcmp(key, "Daemon") == 0)
@@ -440,92 +412,6 @@ bool CConf::read()
 				m_transparentLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "SendFrameType") == 0)
 				m_transparentSendFrameType = (unsigned int)::atoi(value);
-		} else if (section == SECTION::DMR) {
-			if (::strcmp(key, "Enable") == 0)
-				m_dmrEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Beacons") == 0)
-				m_dmrBeacons = ::atoi(value) == 1 ? DMR_BEACONS::NETWORK : DMR_BEACONS::OFF;
-			else if (::strcmp(key, "BeaconInterval") == 0) {
-				m_dmrBeacons = m_dmrBeacons != DMR_BEACONS::OFF ? DMR_BEACONS::TIMED : DMR_BEACONS::OFF;
-				m_dmrBeaconInterval = (unsigned int)::atoi(value);
-			} else if (::strcmp(key, "BeaconDuration") == 0)
-				m_dmrBeaconDuration = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Id") == 0)
-				m_dmrId = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "ColorCode") == 0)
-				m_dmrColorCode = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SelfOnly") == 0)
-				m_dmrSelfOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "EmbeddedLCOnly") == 0)
-				m_dmrEmbeddedLCOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "DumpTAData") == 0)
-				m_dmrDumpTAData = ::atoi(value) == 1;
-			else if (::strcmp(key, "Prefixes") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					unsigned int prefix = (unsigned int)::atoi(p);
-					if (prefix > 0U && prefix <= 999U)
-						m_dmrPrefixes.push_back(prefix);
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "BlackList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					unsigned int id = (unsigned int)::atoi(p);
-					if (id > 0U)
-						m_dmrBlackList.push_back(id);
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "WhiteList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					unsigned int id = (unsigned int)::atoi(p);
-					if (id > 0U)
-						m_dmrWhiteList.push_back(id);
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "Slot1TGWhiteList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					unsigned int id = (unsigned int)::atoi(p);
-					if (id > 0U)
-						m_dmrSlot1TGWhiteList.push_back(id);
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "Slot2TGWhiteList") == 0) {
-				char* p = ::strtok(value, ",\r\n");
-				while (p != nullptr) {
-					unsigned int id = (unsigned int)::atoi(p);
-					if (id > 0U)
-						m_dmrSlot2TGWhiteList.push_back(id);
-					p = ::strtok(nullptr, ",\r\n");
-				}
-			} else if (::strcmp(key, "TXHang") == 0)
-				m_dmrTXHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "CallHang") == 0)
-				m_dmrCallHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_dmrModeHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "OVCM") == 0) {
-				switch (::atoi(value)) {
-				case 1:
-					m_dmrOVCM = DMR_OVCM::RX_ON;
-					break;
-				case 2:
-					m_dmrOVCM = DMR_OVCM::TX_ON;
-					break;
-				case 3:
-					m_dmrOVCM = DMR_OVCM::ON;
-					break;
-				case 4:
-					m_dmrOVCM = DMR_OVCM::FORCE_OFF;
-					break;
-				default:
-					m_dmrOVCM = DMR_OVCM::OFF;
-					break;
-				}
-			} else if (::strcmp(key, "Protect") == 0)
-				m_dmrProtect = ::atoi(value) == 1;
 		} else if (section == SECTION::P25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25Enabled = ::atoi(value) == 1;
@@ -548,33 +434,6 @@ bool CConf::read()
 				m_pocsagEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Frequency") == 0)
 				m_pocsagFrequency = (unsigned int)::atoi(value);
-		} else if (section == SECTION::DMR_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_dmrNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Type") == 0)
-				m_dmrNetworkType = value;
-			else if (::strcmp(key, "RemoteAddress") == 0)
-				m_dmrNetworkRemoteAddress = value;
-			else if (::strcmp(key, "RemotePort") == 0)
-				m_dmrNetworkRemotePort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_dmrNetworkLocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_dmrNetworkLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "Password") == 0)
-				m_dmrNetworkPassword = value;
-			else if (::strcmp(key, "Options") == 0)
-				m_dmrNetworkOptions = value;
-			else if (::strcmp(key, "Debug") == 0)
-				m_dmrNetworkDebug = ::atoi(value) == 1;
-			else if (::strcmp(key, "Jitter") == 0)
-				m_dmrNetworkJitter = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Slot1") == 0)
-				m_dmrNetworkSlot1 = ::atoi(value) == 1;
-			else if (::strcmp(key, "Slot2") == 0)
-				m_dmrNetworkSlot2 = ::atoi(value) == 1;
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_dmrNetworkModeHang = (unsigned int)::atoi(value);
 		} else if (section == SECTION::P25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25NetworkEnabled = ::atoi(value) == 1;
@@ -992,56 +851,6 @@ unsigned int CConf::getTransparentSendFrameType() const
 	return m_transparentSendFrameType;
 }
 
-bool CConf::getDMREnabled() const
-{
-	return m_dmrEnabled;
-}
-
-DMR_BEACONS CConf::getDMRBeacons() const
-{
-	return m_dmrBeacons;
-}
-
-unsigned int CConf::getDMRBeaconInterval() const
-{
-	return m_dmrBeaconInterval;
-}
-
-unsigned int CConf::getDMRBeaconDuration() const
-{
-	return m_dmrBeaconDuration;
-}
-
-unsigned int CConf::getDMRId() const
-{
-	return m_dmrId;
-}
-
-unsigned int CConf::getDMRColorCode() const
-{
-	return m_dmrColorCode;
-}
-
-bool CConf::getDMRSelfOnly() const
-{
-	return m_dmrSelfOnly;
-}
-
-bool CConf::getDMREmbeddedLCOnly() const
-{
-	return m_dmrEmbeddedLCOnly;
-}
-
-bool CConf::getDMRDumpTAData() const
-{
-	return m_dmrDumpTAData;
-}
-
-std::vector<unsigned int> CConf::getDMRPrefixes() const
-{
-	return m_dmrPrefixes;
-}
-
 std::vector<unsigned int> CConf::getDMRBlackList() const
 {
 	return m_dmrBlackList;
@@ -1060,31 +869,6 @@ std::vector<unsigned int> CConf::getDMRSlot1TGWhiteList() const
 std::vector<unsigned int> CConf::getDMRSlot2TGWhiteList() const
 {
 	return m_dmrSlot2TGWhiteList;
-}
-
-unsigned int CConf::getDMRCallHang() const
-{
-	return m_dmrCallHang;
-}
-
-unsigned int CConf::getDMRTXHang() const
-{
-	return m_dmrTXHang;
-}
-
-unsigned int CConf::getDMRModeHang() const
-{
-	return m_dmrModeHang;
-}
-
-DMR_OVCM CConf::getDMROVCM() const
-{
-	return m_dmrOVCM;
-}
-
-bool CConf::getDMRProtect() const
-{
-	return m_dmrProtect;
 }
 
 bool CConf::getP25Enabled() const
@@ -1137,70 +921,6 @@ unsigned int CConf::getPOCSAGFrequency() const
 	return m_pocsagFrequency;
 }
 
-bool CConf::getDMRNetworkEnabled() const
-{
-	return m_dmrNetworkEnabled;
-}
-
-std::string CConf::getDMRNetworkType() const
-{
-	return m_dmrNetworkType;
-}
-
-std::string CConf::getDMRNetworkRemoteAddress() const
-{
-	return m_dmrNetworkRemoteAddress;
-}
-
-unsigned short CConf::getDMRNetworkRemotePort() const
-{
-	return m_dmrNetworkRemotePort;
-}
-
-std::string CConf::getDMRNetworkLocalAddress() const
-{
-	return m_dmrNetworkLocalAddress;
-}
-
-unsigned short CConf::getDMRNetworkLocalPort() const
-{
-	return m_dmrNetworkLocalPort;
-}
-
-std::string CConf::getDMRNetworkPassword() const
-{
-	return m_dmrNetworkPassword;
-}
-
-std::string CConf::getDMRNetworkOptions() const
-{
-	return m_dmrNetworkOptions;
-}
-
-unsigned int CConf::getDMRNetworkModeHang() const
-{
-	return m_dmrNetworkModeHang;
-}
-
-bool CConf::getDMRNetworkDebug() const
-{
-	return m_dmrNetworkDebug;
-}
-
-unsigned int CConf::getDMRNetworkJitter() const
-{
-	return m_dmrNetworkJitter;
-}
-
-bool CConf::getDMRNetworkSlot1() const
-{
-	return m_dmrNetworkSlot1;
-}
-
-bool CConf::getDMRNetworkSlot2() const
-{
-	return m_dmrNetworkSlot2;
-}
 bool CConf::getP25NetworkEnabled() const
 {
 	return m_p25NetworkEnabled;

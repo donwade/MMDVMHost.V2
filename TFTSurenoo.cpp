@@ -101,10 +101,9 @@ static const struct layoutdef Layout[] = {
 #define STR_MMDVM		"MMDVM"
 #define STR_P25			"P25"
 
-CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout) :
+CTFTSurenoo::CTFTSurenoo(const std::string& callsign, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout) :
 CDisplay(),
 m_callsign(callsign),
-m_dmrid(dmrid),
 m_serial(serial),
 m_brightness(brightness),
 m_mode(MODE_IDLE),
@@ -148,7 +147,7 @@ void CTFTSurenoo::setIdleInt()
 {
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s / %u", m_callsign.c_str(), m_dmrid);
+	::snprintf(m_temp, sizeof(m_temp), "%s / %u", "hi Don", 696969); // m_callsign.c_str(), m_dmrid);
 	setStatusLine(statusLineNo(0), m_temp);
 	setStatusLine(statusLineNo(1), "IDLE");
 
@@ -185,63 +184,6 @@ void CTFTSurenoo::setQuitInt()
 	refreshDisplay();
 
 	m_mode = MODE_QUIT;
-}
-
-void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
-{
-	assert(type != nullptr);
-
-	if (m_mode != MODE_DMR) {
-		setModeLine(STR_DMR);
-		if (m_duplex) {
-			setStatusLine(statusLineNo(0), "Listening");
-			setStatusLine(statusLineNo(1), "TS1");
-			setStatusLine(statusLineNo(2), "Listening");
-			setStatusLine(statusLineNo(3), "TS2");
-		}
-	}		
-
-	int pos = m_duplex ? (slotNo - 1) : 0;
-	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, src.c_str());
-	setStatusLine(statusLineNo(pos * 2), m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
-	setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
-
-	m_mode = MODE_DMR;
-}
-
-int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type)
-{
-	assert(type != nullptr);
-
-	// duplex mode is not supported
-	if (m_duplex)
-		return -1;
-
-	setModeLine(STR_DMR);
-	setStatusLine(statusLineNo(2), (src.get(keyFIRST_NAME) + " " + src.get(keyLAST_NAME)).c_str());
-	setStatusLine(statusLineNo(3), src.get(keyCITY).c_str());
-	setStatusLine(statusLineNo(4), src.get(keySTATE).c_str());
-	setStatusLine(statusLineNo(5), src.get(keyCOUNTRY).c_str());
-
-	m_mode = MODE_DMR;
-
-	return 1;
-}
-
-void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
-{
-	int pos = m_duplex ? (slotNo - 1) : 0;
-	setStatusLine(statusLineNo(pos * 2), "Listening");
-
-	if (m_duplex) {
-		::snprintf(m_temp, sizeof(m_temp), "TS%d", slotNo);
-		setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
-	} else {
-		for (int i = 1; i < STATUS_LINES; i++)
-			setStatusLine(statusLineNo(i), "");
-	}
 }
 
 void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)

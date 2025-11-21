@@ -17,8 +17,8 @@
  */
 
 #include "MMDVMHost.h"
-#include "DMRDirectNetwork.h"
-#include "DMRGatewayNetwork.h"
+//#include "DMRDirectNetwork.h"
+//#include "DMRGatewayNetwork.h"
 ///#include "NXDNKenwoodNetwork.h"
 ///#include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
@@ -27,6 +27,7 @@
 #if defined(__linux__)
 #include "I2CController.h"
 #endif
+#include "P25Lookup.h"
 #include "UDPController.h"
 ///#include "DStarDefines.h"
 #include "Version.h"
@@ -134,10 +135,8 @@ int main(int argc, char** argv)
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
 m_conf(confFile),
 m_modem(nullptr),
-m_dmr(nullptr),
 m_p25(nullptr),
 m_pocsag(nullptr),
-m_dmrNetwork(nullptr),
 m_p25Network(nullptr),
 m_pocsagNetwork(nullptr),
 m_display(nullptr),
@@ -152,7 +151,6 @@ m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
 m_duplex(false),
 m_timeout(180U),
-m_dmrEnabled(false),
 m_p25Enabled(false),
 m_pocsagEnabled(false),
 m_cwIdTime(0U),
@@ -272,11 +270,6 @@ int CMMDVMHost::run()
 	if (!ret)
 		return 1;
 
-	if (m_dmrEnabled && !m_modem->hasDMR()) {
-		LogWarning("DMR enabled in the host but not in the modem firmware, disabling");
-		m_dmrEnabled = false;
-	}
-
 	if (m_p25Enabled && !m_modem->hasP25()) {
 		LogWarning("P25 enabled in the host but not in the modem firmware, disabling");
 		m_p25Enabled = false;
@@ -290,12 +283,6 @@ int CMMDVMHost::run()
 	m_display = CDisplay::createDisplay(m_conf, m_modem);
 
 	LogInfo("Opening network connections");
-
-	if (m_dmrEnabled && m_conf.getDMRNetworkEnabled()) {
-		ret = createDMRNetwork();
-		if (!ret)
-			return 1;
-	}
 
 	if (m_p25Enabled && m_conf.getP25NetworkEnabled()) {
 		ret = createP25Network();
@@ -399,104 +386,6 @@ int CMMDVMHost::run()
 	CTimer dmrBeaconIntervalTimer(1000U);
 	CTimer dmrBeaconDurationTimer(1000U);
 
-	if (m_dmrEnabled) {
-		unsigned int id             = m_conf.getDMRId();
-		unsigned int colorCode      = m_conf.getDMRColorCode();
-		bool selfOnly               = m_conf.getDMRSelfOnly();
-		bool embeddedLCOnly         = m_conf.getDMREmbeddedLCOnly();
-		bool dumpTAData             = m_conf.getDMRDumpTAData();
-		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
-		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
-		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
-		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
-		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
-		unsigned int callHang       = m_conf.getDMRCallHang();
-		unsigned int txHang         = m_conf.getDMRTXHang();
-		unsigned int jitter         = m_conf.getDMRNetworkJitter();
-		m_dmrRFModeHang             = m_conf.getDMRModeHang();
-		dmrBeacons                  = m_conf.getDMRBeacons();
-		DMR_OVCM ovcm               = m_conf.getDMROVCM();
-		bool protect                = m_conf.getDMRProtect();
-
-		if (txHang > m_dmrRFModeHang)
-			txHang = m_dmrRFModeHang;
-
-		if (m_conf.getDMRNetworkEnabled()) {
-			if (txHang > m_dmrNetModeHang)
-				txHang = m_dmrNetModeHang;
-		}
-
-		if (callHang > txHang)
-			callHang = txHang;
-
-		LogInfo("DMR RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    Color Code: %u", colorCode);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
-		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
-		LogInfo("    Prefixes: %u", prefixes.size());
-
-		if (blackList.size() > 0U)
-			LogInfo("    Source ID Black List: %u", blackList.size());
-		if (whiteList.size() > 0U)
-			LogInfo("    Source ID White List: %u", whiteList.size());
-		if (slot1TGWhiteList.size() > 0U)
-			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
-		if (slot2TGWhiteList.size() > 0U)
-			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
-
-		LogInfo("    Call Hang: %us", callHang);
-		LogInfo("    TX Hang: %us", txHang);
-		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
-		if (ovcm == DMR_OVCM::OFF)
-			LogInfo("    OVCM: off");
-		else if (ovcm == DMR_OVCM::RX_ON)
-			LogInfo("    OVCM: on(rx only)");
-		else if (ovcm == DMR_OVCM::TX_ON)
-			LogInfo("    OVCM: on(tx only)");
-		else if (ovcm == DMR_OVCM::ON)
-			LogInfo("    OVCM: on");
-		else if (ovcm == DMR_OVCM::FORCE_OFF)
-			LogInfo("    OVCM: off (forced)");
-
-		if (protect)
-			LogInfo("    Protect: yes");
-
-		switch (dmrBeacons) {
-			case DMR_BEACONS::NETWORK: {
-					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
-
-					LogInfo("    DMR Roaming Beacons Type: network");
-					LogInfo("    DMR Roaming Beacons Duration: %us", dmrBeaconDuration);
-
-					dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
-				}
-				break;
-			case DMR_BEACONS::TIMED: {
-					unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
-					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
-
-					LogInfo("    DMR Roaming Beacons Type: timed");
-					LogInfo("    DMR Roaming Beacons Interval: %us", dmrBeaconInterval);
-					LogInfo("    DMR Roaming Beacons Duration: %us", dmrBeaconDuration);
-
-					dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
-
-					dmrBeaconIntervalTimer.setTimeout(dmrBeaconInterval);
-					dmrBeaconIntervalTimer.start();
-				}
-				break;
-			default:
-				LogInfo("    DMR Roaming Beacons Type: off");
-				break;
-		}
-
-		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_P25Lookup, rssi, jitter, ovcm, protect);
-
-		m_dmrTXTimer.setTimeout(txHang);
-	}
-
 	if (m_p25Enabled) {
 		unsigned int id     = m_conf.getP25Id();
 		unsigned int nac    = m_conf.getP25NAC();
@@ -572,80 +461,6 @@ int CMMDVMHost::run()
 		unsigned int len;
 		bool ret;
 
-		len = m_modem->readDMRData1(data);
-		if (m_dmr != nullptr && m_dmrEnabled && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				if (m_duplex) {
-					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
-						m_modeTimer.setTimeout(m_dmrRFModeHang);
-						setMode(MODE_DMR);
-						dmrBeaconDurationTimer.stop();
-					}
-				} else {
-					m_modeTimer.setTimeout(m_dmrRFModeHang);
-					setMode(MODE_DMR);
-					m_dmr->writeModemSlot1(data, len);
-					dmrBeaconDurationTimer.stop();
-				}
-			} else if (m_mode == MODE_DMR) {
-				if (m_duplex && !m_modem->hasTX()) {
-					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
-						m_modem->writeDMRStart(true);
-						m_dmrTXTimer.start();
-					}
-				} else {
-					bool ret = m_dmr->writeModemSlot1(data, len);
-					if (ret) {
-						dmrBeaconDurationTimer.stop();
-						m_modeTimer.start();
-						if (m_duplex)
-							m_dmrTXTimer.start();
-					}
-				}
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("DMR modem data received when in mode %u", m_mode);
-			}
-		}
-
-		len = m_modem->readDMRData2(data);
-		if (m_dmr != nullptr && m_dmrEnabled && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				if (m_duplex) {
-					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
-						m_modeTimer.setTimeout(m_dmrRFModeHang);
-						setMode(MODE_DMR);
-						dmrBeaconDurationTimer.stop();
-					}
-				} else {
-					m_modeTimer.setTimeout(m_dmrRFModeHang);
-					setMode(MODE_DMR);
-					m_dmr->writeModemSlot2(data, len);
-					dmrBeaconDurationTimer.stop();
-				}
-			} else if (m_mode == MODE_DMR) {
-				if (m_duplex && !m_modem->hasTX()) {
-					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
-						m_modem->writeDMRStart(true);
-						m_dmrTXTimer.start();
-					}
-				} else {
-					bool ret = m_dmr->writeModemSlot2(data, len);
-					if (ret) {
-						dmrBeaconDurationTimer.stop();
-						m_modeTimer.start();
-						if (m_duplex)
-							m_dmrTXTimer.start();
-					}
-				}
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("DMR modem data received when in mode %u", m_mode);
-			}
-		}
-
 		len = m_modem->readP25Data(data);
 		if (m_p25 != nullptr && m_p25Enabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -670,52 +485,6 @@ int CMMDVMHost::run()
 		if (!m_fixedMode) {
 			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 				setMode(MODE_IDLE);
-		}
-
-		if (m_dmr != nullptr && m_dmrEnabled) {
-			ret = m_modem->hasDMRSpace1();
-			if (ret) {
-				len = m_dmr->readModemSlot1(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_dmrNetModeHang);
-						setMode(MODE_DMR);
-					}
-					if (m_mode == MODE_DMR) {
-						if (m_duplex) {
-							m_modem->writeDMRStart(true);
-							m_dmrTXTimer.start();
-						}
-						m_modem->writeDMRData1(data, len);
-						dmrBeaconDurationTimer.stop();
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("DMR data received when in mode %u", m_mode);
-					}
-				}
-			}
-
-			ret = m_modem->hasDMRSpace2();
-			if (ret) {
-				len = m_dmr->readModemSlot2(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_dmrNetModeHang);
-						setMode(MODE_DMR);
-					}
-					if (m_mode == MODE_DMR) {
-						if (m_duplex) {
-							m_modem->writeDMRStart(true);
-							m_dmrTXTimer.start();
-						}
-						m_modem->writeDMRData2(data, len);
-						dmrBeaconDurationTimer.stop();
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("DMR data received when in mode %u", m_mode);
-					}
-				}
-			}
 		}
 
 		if (m_p25 != nullptr && m_p25Enabled) {
@@ -783,14 +552,10 @@ int CMMDVMHost::run()
 			m_reload = false;
 		}
 		
-		if (m_dmr != nullptr)
-			m_dmr->clock();
 		if (m_p25 != nullptr)
 			m_p25->clock(ms);
 		if (m_pocsag != nullptr)
 			m_pocsag->clock(ms);
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->clock(ms);
 		if (m_p25Network != nullptr)
 			m_p25Network->clock(ms);
 		if (m_pocsagNetwork != nullptr)
@@ -819,20 +584,6 @@ int CMMDVMHost::run()
 						dmrBeaconDurationTimer.start();
 						if (m_duplex)
 							LogDebug("sending DMR Roaming Beacon (timed mode)");
-					}
-				}
-				break;
-			case DMR_BEACONS::NETWORK:
-				if (m_dmrNetwork != nullptr && m_dmrEnabled) {
-					bool beacon = m_dmrNetwork->wantsBeacon();
-					if (beacon) {
-						if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
-							if (!m_fixedMode && m_mode == MODE_IDLE)
-								setMode(MODE_DMR);
-							dmrBeaconDurationTimer.start();
-							if (m_duplex)
-								LogDebug("sending DMR Roaming Beacon (network mode)");
-						}
 					}
 				}
 				break;
@@ -871,11 +622,6 @@ int CMMDVMHost::run()
 
 	LogInfo("Closing network connections");
 
-	if (m_dmrNetwork != nullptr) {
-		m_dmrNetwork->close(true);
-		delete m_dmrNetwork;
-	}
-
 	if (m_p25Network != nullptr) {
 		m_p25Network->close();
 		delete m_p25Network;
@@ -898,7 +644,6 @@ int CMMDVMHost::run()
 
 	LogInfo("Stopping protocol handlers");
 
-	delete m_dmr;
 	delete m_p25;
 	delete m_pocsag;
  
@@ -938,7 +683,6 @@ bool CMMDVMHost::createModem()
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
-	unsigned int colorCode       = m_conf.getDMRColorCode();
 	unsigned int p25TXHang       = m_conf.getP25TXHang();
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
@@ -1004,10 +748,9 @@ bool CMMDVMHost::createModem()
 		return false;
 
 	m_modem->setPort(port);
-	m_modem->setModeParams(m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
+	m_modem->setModeParams(m_p25Enabled, m_pocsagEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dmrTXLevel, p25TXLevel, pocsagTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
-	m_modem->setDMRParams(colorCode);
 	m_modem->setP25Params(p25TXHang);
 
  	bool ret = m_modem->open();
@@ -1019,90 +762,6 @@ bool CMMDVMHost::createModem()
 
 	return true;
 }
-
-bool CMMDVMHost::createDMRNetwork()
-{
-	std::string remoteAddress  = m_conf.getDMRNetworkRemoteAddress();
-	unsigned short remotePort  = m_conf.getDMRNetworkRemotePort();
-	std::string localAddress   = m_conf.getDMRNetworkLocalAddress();
-	unsigned short localPort   = m_conf.getDMRNetworkLocalPort();
-	unsigned int id      = m_conf.getDMRId();
-	std::string password = m_conf.getDMRNetworkPassword();
-	bool debug           = m_conf.getDMRNetworkDebug();
-	unsigned int jitter  = m_conf.getDMRNetworkJitter();
-	bool slot1           = m_conf.getDMRNetworkSlot1();
-	bool slot2           = m_conf.getDMRNetworkSlot2();
-	HW_TYPE hwType       = m_modem->getHWType();
-	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
-	std::string options  = m_conf.getDMRNetworkOptions();
-
-	std::string type = m_conf.getDMRNetworkType();
-
-	LogInfo("DMR Network Parameters");
-	LogInfo("    Type: %s", type.c_str());
-	LogInfo("    Remote Address: %s", remoteAddress.c_str());
-	LogInfo("    Remote Port: %hu", remotePort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %hu", localPort);
-	LogInfo("    Jitter: %ums", jitter);
-	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
-	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
-	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
-
-	if (type == "Direct")
-		m_dmrNetwork = new CDMRDirectNetwork(remoteAddress, remotePort, localAddress, localPort, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
-	else
-		m_dmrNetwork = new CDMRGatewayNetwork(remoteAddress, remotePort, localAddress, localPort, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
-
-	unsigned int rxFrequency = m_conf.getRXFrequency();
-	unsigned int txFrequency = m_conf.getTXFrequency();
-	unsigned int power       = m_conf.getPower();
-	unsigned int colorCode   = m_conf.getDMRColorCode();
-
-	LogInfo("Info Parameters");
-	LogInfo("    Callsign: %s", m_callsign.c_str());
-	LogInfo("    RX Frequency: %uHz", rxFrequency);
-	LogInfo("    TX Frequency: %uHz", txFrequency);
-	LogInfo("    Power: %uW", power);
-
-	if (type == "Direct") {
-		float latitude          = m_conf.getLatitude();
-		float longitude         = m_conf.getLongitude();
-		int height              = m_conf.getHeight();
-		std::string location    = m_conf.getLocation();
-		std::string description = m_conf.getDescription();
-		std::string url         = m_conf.getURL();
-
-		LogInfo("    Latitude: %fdeg N", latitude);
-		LogInfo("    Longitude: %fdeg E", longitude);
-		LogInfo("    Height: %um", height);
-		LogInfo("    Location: \"%s\"", location.c_str());
-		LogInfo("    Description: \"%s\"", description.c_str());
-		LogInfo("    URL: \"%s\"", url.c_str());
-
-		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
-	} else {
-		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, 0.0F, 0.0F, 0, "", "", "");
-	}
-	
-	if (!options.empty()) {
-		LogInfo("    Options: %s", options.c_str());
-
-		m_dmrNetwork->setOptions(options);
-	}
-
-	bool ret = m_dmrNetwork->open();
-	if (!ret) {
-		delete m_dmrNetwork;
-		m_dmrNetwork = nullptr;
-		return false;
-	}
-
-	m_dmrNetwork->enable(true);
-
-	return true;
-}
-
 
 bool CMMDVMHost::createP25Network()
 {
@@ -1166,7 +825,6 @@ bool CMMDVMHost::createPOCSAGNetwork()
  
 void CMMDVMHost::readParams()
 {
-	m_dmrEnabled    = m_conf.getDMREnabled();
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
  	m_duplex        = m_conf.getDuplex();
@@ -1179,7 +837,6 @@ void CMMDVMHost::readParams()
 	LogInfo("    Id: %u", m_id);
 	LogInfo("    Duplex: %s", m_duplex ? "yes" : "no");
 	LogInfo("    Timeout: %us", m_timeout);
-	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
  }
@@ -1190,7 +847,7 @@ void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
 
 	mode = enabled;
 
-	m_modem->setModeParams(m_dmrEnabled, m_p25Enabled, m_pocsagEnabled);
+	m_modem->setModeParams(m_p25Enabled, m_pocsagEnabled);
 	if (!m_modem->writeConfig())
 		LogError("Cannot write Config to MMDVM");
 }
@@ -1206,11 +863,6 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 		// as Controller and Network will ::clock() immediatly after.
 		if (switchToOrInIDLE) {
 			switch (mode) {
-			case MODE_DMR:
-				if (m_dmrNetwork != nullptr)
-					m_dmrNetwork->enable(enableMode);
-				m_dmr->enable(enableMode);
-				break;
 			case MODE_P25:
 				if (m_p25Network != nullptr)
 					m_p25Network->enable(enableMode);
@@ -1247,42 +899,11 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	switch (mode) {
 
-	case MODE_DMR:
-		if (m_dmrNetwork != nullptr && m_dmrEnabled)
-			m_dmrNetwork->enable(true);
-		if (m_p25Network != nullptr)
-			m_p25Network->enable(false);
- 		if (m_pocsagNetwork != nullptr)
-			m_pocsagNetwork->enable(false);
-		if (m_dmr != nullptr && m_dmrEnabled)
-			m_dmr->enable(true);
-		if (m_p25 != nullptr)
-			m_p25->enable(false);
- 		if (m_pocsag != nullptr)
-			m_pocsag->enable(false);
- 		if (m_dmrEnabled) {
-			m_modem->setMode(MODE_DMR);
-			if (m_duplex) {
-				m_modem->writeDMRStart(true);
-				m_dmrTXTimer.start();
-			}
-			m_mode = MODE_DMR;
-			m_modeTimer.start();
-			m_cwIdTimer.stop();
-			createLockFile("DMR");
-			LogMessage("Mode set to DMR");
-		}
-		break;
-
 	case MODE_P25:
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
 		if (m_p25Network != nullptr && m_p25Enabled)
 			m_p25Network->enable(true);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
 		if (m_p25 != nullptr && m_p25Enabled)
 			m_p25->enable(true);
  		if (m_pocsag != nullptr)
@@ -1298,14 +919,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
  	case MODE_POCSAG:
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
 		if (m_p25Network != nullptr)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr && m_pocsagEnabled)
 			m_pocsagNetwork->enable(true);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
 		if (m_p25 != nullptr)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr && m_pocsagEnabled)
@@ -1319,14 +936,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
  
 	case MODE_LOCKOUT:
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
 		if (m_p25Network != nullptr)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
 		if (m_p25 != nullptr)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr)
@@ -1346,14 +959,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	case MODE_ERROR:
 		LogMessage("Mode set to Error");
-		if (m_dmrNetwork != nullptr)
-			m_dmrNetwork->enable(false);
 		if (m_p25Network != nullptr)
 			m_p25Network->enable(false);
  		if (m_pocsagNetwork != nullptr)
 			m_pocsagNetwork->enable(false);
-		if (m_dmr != nullptr)
-			m_dmr->enable(false);
 		if (m_p25 != nullptr)
 			m_p25->enable(false);
  		if (m_pocsag != nullptr)
@@ -1371,22 +980,14 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	default:
-		if (m_dmrNetwork != nullptr && m_dmrEnabled)
-			m_dmrNetwork->enable(true);
 		if (m_p25Network != nullptr && m_p25Enabled)
 			m_p25Network->enable(true);
  		if (m_pocsagNetwork != nullptr && m_pocsagEnabled)
 			m_pocsagNetwork->enable(true);
-		if (m_dmr != nullptr && m_dmrEnabled)
-			m_dmr->enable(true);
 		if (m_p25 != nullptr && m_p25Enabled)
 			m_p25->enable(true);
  		if (m_pocsag != nullptr && m_pocsagEnabled)
 			m_pocsag->enable(true);
- 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrEnabled) {
-			m_modem->writeDMRStart(false);
-			m_dmrTXTimer.stop();
-		}
 		m_modem->setMode(MODE_IDLE);
 		if (m_mode == MODE_ERROR) {
 			m_modem->sendCWId(m_callsign);
@@ -1439,22 +1040,12 @@ void CMMDVMHost::remoteControl()
 		m_fixedMode = false;
 		setMode(MODE_LOCKOUT);
 		break;
-	case REMOTE_COMMAND::MODE_DMR:
-		if (m_dmr != nullptr)
-			processModeCommand(MODE_DMR, m_dmrRFModeHang);
-		break;
 	case REMOTE_COMMAND::MODE_P25:
 		if (m_p25 != nullptr)
 			processModeCommand(MODE_P25, m_p25RFModeHang);
 		break;
-	case REMOTE_COMMAND::ENABLE_DMR:
-		processEnableModeCommand(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled, true);
-		break;
 	case REMOTE_COMMAND::ENABLE_P25:
 		processEnableModeCommand(MODE_P25, (m_p25 != nullptr), m_p25Enabled, true);
-		break;
-	case REMOTE_COMMAND::DISABLE_DMR:
-		processEnableModeCommand(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_P25:
 		processEnableModeCommand(MODE_P25, (m_p25), m_p25Enabled, false);
@@ -1543,7 +1134,6 @@ void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
 void CMMDVMHost::buildNetworkStatusString(std::string &str)
 {
 	str = "";
-	str += std::string(" dmr:") + (((m_dmrNetwork == nullptr) || (m_dmrEnabled == false)) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" p25:") + (((m_p25Network == nullptr) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
  }
 
@@ -1551,6 +1141,5 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 {
 	str = "";
 
-	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != nullptr)) ? m_conf.getDMRNetworkRemoteAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != nullptr)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
  }

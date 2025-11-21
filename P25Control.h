@@ -24,7 +24,7 @@
 #include "P25LowSpeedData.h"
 #include "RingBuffer.h"
 #include "P25Network.h"
-#include "DMRLookup.h"
+#include "P25Lookup.h"
 #include "P25Audio.h"
 #include "Defines.h"
 #include "Display.h"

@@ -103,25 +103,11 @@ public:
   unsigned int getTransparentSendFrameType() const;
 
   // The DMR section
-  bool         getDMREnabled() const;
-  DMR_BEACONS  getDMRBeacons() const;
-  unsigned int getDMRBeaconInterval() const;
-  unsigned int getDMRBeaconDuration() const;
-  unsigned int getDMRId() const;
-  unsigned int getDMRColorCode() const;
-  bool         getDMREmbeddedLCOnly() const;
-  bool         getDMRDumpTAData() const;
-  bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::vector<unsigned int> getDMRWhiteList() const;
   std::vector<unsigned int> getDMRSlot1TGWhiteList() const;
   std::vector<unsigned int> getDMRSlot2TGWhiteList() const;
-  unsigned int getDMRCallHang() const;
-  unsigned int getDMRTXHang() const;
-  unsigned int getDMRModeHang() const;
-  DMR_OVCM     getDMROVCM() const;
-  bool         getDMRProtect() const;
 
   // The P25 section
   bool         getP25Enabled() const;
@@ -292,25 +278,11 @@ private:
   unsigned short m_transparentLocalPort;
   unsigned int m_transparentSendFrameType;
 
-  bool         m_dmrEnabled;
-  DMR_BEACONS  m_dmrBeacons;
-  unsigned int m_dmrBeaconInterval;
-  unsigned int m_dmrBeaconDuration;
-  unsigned int m_dmrId;
-  unsigned int m_dmrColorCode;
-  bool         m_dmrSelfOnly;
-  bool         m_dmrEmbeddedLCOnly;
-  bool         m_dmrDumpTAData;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrWhiteList;
   std::vector<unsigned int> m_dmrSlot1TGWhiteList;
   std::vector<unsigned int> m_dmrSlot2TGWhiteList;
-  unsigned int m_dmrCallHang;
-  unsigned int m_dmrTXHang;
-  unsigned int m_dmrModeHang;
-  DMR_OVCM     m_dmrOVCM;
-  bool         m_dmrProtect;
 
   bool         m_p25Enabled;
   unsigned int m_p25Id;
@@ -323,20 +295,6 @@ private:
 
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
-
-  bool         m_dmrNetworkEnabled;
-  std::string  m_dmrNetworkType;
-  std::string  m_dmrNetworkRemoteAddress;
-  unsigned short m_dmrNetworkRemotePort;
-  std::string  m_dmrNetworkLocalAddress;
-  unsigned short m_dmrNetworkLocalPort;
-  std::string  m_dmrNetworkPassword;
-  std::string  m_dmrNetworkOptions;
-  bool         m_dmrNetworkDebug;
-  unsigned int m_dmrNetworkJitter;
-  bool         m_dmrNetworkSlot1;
-  bool         m_dmrNetworkSlot2;
-  unsigned int m_dmrNetworkModeHang;
 
   bool         m_p25NetworkEnabled;
   std::string  m_p25GatewayAddress;

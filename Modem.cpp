@@ -17,7 +17,7 @@
  */
 
 ///#include "DStarDefines.h"
-#include "DMRDefines.h"
+//#include "P25Defines.h"
 ///#include "YSFDefines.h"
 #include "P25Defines.h"
 ///#include "NXDNDefines.h"
@@ -89,14 +89,12 @@ const unsigned char CAP2_POCSAG = 0x01U;
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
-m_dmrColorCode(0U),
 m_p25TXHang(5U),
  m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
 m_pttInvert(pttInvert),
 m_txDelay(txDelay),
-m_dmrDelay(dmrDelay),
 m_rxLevel(0.0F),
 m_cwIdTXLevel(0.0F),
 m_dmrTXLevel(0.0F),
@@ -109,7 +107,6 @@ m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_pocsagFrequency(0U),
-m_dmrEnabled(false),
 m_p25Enabled(false),
 m_pocsagEnabled(false),
 m_rxDCOffset(0),
@@ -137,10 +134,8 @@ m_sendTransparentDataFrameType(0U),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
-m_dmrSpace1(0U),
-m_dmrSpace2(0U),
 m_p25Space(0U),
- m_pocsagSpace(0U),
+m_pocsagSpace(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -177,9 +172,8 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CModem::setModeParams(bool dmrEnabled, bool p25Enabled, bool pocsagEnabled)
+void CModem::setModeParams(bool p25Enabled, bool pocsagEnabled)
 {
-	m_dmrEnabled    = dmrEnabled;
 	m_p25Enabled    = p25Enabled;
  	m_pocsagEnabled = pocsagEnabled;
 }
@@ -191,13 +185,6 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dmrTXLevel, float
 	m_dmrTXLevel    = dmrTXLevel;
 	m_p25TXLevel    = p25TXLevel;
  	m_pocsagTXLevel = pocsagTXLevel;
-}
-
-void CModem::setDMRParams(unsigned int colorCode)
-{
-	assert(colorCode < 16U);
-
-	m_dmrColorCode = colorCode;
 }
 
 void CModem::setP25Params(unsigned int txHang)
@@ -286,64 +273,6 @@ void CModem::clock(unsigned int ms)
 		// type == OK
 		switch (m_type) {
 
-			case MMDVM_DMR_DATA1: {
-					if (m_trace)
-						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
-
-					unsigned char data = m_length - m_offset + 1U;
-					m_rxDMRData1.addData(&data, 1U);
-
-					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
-						data = TAG_EOT;
-					else
-						data = TAG_DATA;
-					m_rxDMRData1.addData(&data, 1U);
-
-					m_rxDMRData1.addData(m_buffer + m_offset, m_length - m_offset);
-				}
-				break;
-
-			case MMDVM_DMR_DATA2: {
-					if (m_trace)
-						CUtils::dump(1U, "RX DMR Data 2", m_buffer, m_length);
-
-					unsigned char data = m_length - m_offset + 1U;
-					m_rxDMRData2.addData(&data, 1U);
-
-					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
-						data = TAG_EOT;
-					else
-						data = TAG_DATA;
-					m_rxDMRData2.addData(&data, 1U);
-
-					m_rxDMRData2.addData(m_buffer + m_offset, m_length - m_offset);
-				}
-				break;
-
-			case MMDVM_DMR_LOST1: {
-					if (m_trace)
-						CUtils::dump(1U, "RX DMR Lost 1", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDMRData1.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDMRData1.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_DMR_LOST2: {
-					if (m_trace)
-						CUtils::dump(1U, "RX DMR Lost 2", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDMRData2.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDMRData2.addData(&data, 1U);
-				}
-				break;
-
 			case MMDVM_P25_HDR: {
 				if (m_trace)
 					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
@@ -411,9 +340,6 @@ void CModem::clock(unsigned int ms)
 						m_p25Space    = 0U;
  						m_pocsagSpace = 0U;
 
-						m_dmrSpace1  = m_buffer[m_offset + 4U];
-						m_dmrSpace2  = m_buffer[m_offset + 5U];
-
 						// The following depend on the version of the firmware
 						if (m_length > (m_offset + 7U))
 							m_p25Space    = m_buffer[m_offset + 7U];
@@ -441,16 +367,12 @@ void CModem::clock(unsigned int ms)
 							LogError("MMDVM DAC levels have overflowed");
 						m_cd = (m_buffer[m_offset + 1U] & 0x40U) == 0x40U;
 
-						m_dmrSpace1   = m_buffer[m_offset + 4U];
-						m_dmrSpace2   = m_buffer[m_offset + 5U];
 						m_p25Space    = m_buffer[m_offset + 7U];
 						m_pocsagSpace = m_buffer[m_offset + 11U];
 					}
 					break;
 
 				default:
-					m_dmrSpace1   = 0U;
-					m_dmrSpace2   = 0U;
 					m_p25Space    = 0U;
  					m_pocsagSpace = 0U;
 					break;
@@ -559,40 +481,6 @@ void CModem::clock(unsigned int ms)
 	m_playoutTimer.clock(ms);
 	if (!m_playoutTimer.hasExpired())
 		return;
-
-	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
-		unsigned char len = 0U;
-		m_txDMRData1.getData(&len, 1U);
-		m_txDMRData1.getData(m_buffer, len);
-
-		if (m_trace)
-			CUtils::dump(1U, "TX DMR Data 1", m_buffer, len);
-
-		int ret = m_port->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing DMR data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_dmrSpace1--;
-	}
-
-	if (m_dmrSpace2 > 1U && !m_txDMRData2.isEmpty()) {
-		unsigned char len = 0U;
-		m_txDMRData2.getData(&len, 1U);
-		m_txDMRData2.getData(m_buffer, len);
-
-		if (m_trace)
-			CUtils::dump(1U, "TX DMR Data 2", m_buffer, len);
-
-		int ret = m_port->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing DMR data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_dmrSpace2--;
-	}
 
 	if (m_p25Space > 1U && !m_txP25Data.isEmpty()) {
 		unsigned char len = 0U;
@@ -750,66 +638,6 @@ unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
 	}
 
 	return n;
-}
-
-bool CModem::hasDMRSpace1() const
-{
-	unsigned int space = m_txDMRData1.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
-}
-
-bool CModem::hasDMRSpace2() const
-{
-	unsigned int space = m_txDMRData2.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
-}
-
-bool CModem::writeDMRData1(const unsigned char* data, unsigned int length)
-{
-	assert(data != nullptr);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_DMR_DATA1;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDMRData1.addData(&len, 1U);
-	m_txDMRData1.addData(buffer, len);
-
-	return true;
-}
-
-bool CModem::writeDMRData2(const unsigned char* data, unsigned int length)
-{
-	assert(data != nullptr);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_DMR_DATA2;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDMRData2.addData(&len, 1U);
-	m_txDMRData2.addData(buffer, len);
-
-	return true;
 }
 
 bool CModem::hasP25Space() const
@@ -1220,8 +1048,6 @@ bool CModem::setConfig1()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
-	if (m_dmrEnabled)
-		buffer[4U] |= 0x02U;
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
  	if (m_pocsagEnabled)
@@ -1234,10 +1060,6 @@ bool CModem::setConfig1()
 	buffer[7U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
 	buffer[8U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
-
-	buffer[9U] = m_dmrColorCode;
-
-	buffer[10U] = m_dmrDelay;
 
 	buffer[11U] = 128U;           // Was OscOffset
 
@@ -1315,8 +1137,6 @@ bool CModem::setConfig2()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
-	if (m_dmrEnabled)
-		buffer[4U] |= 0x02U;
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
 
@@ -1346,9 +1166,6 @@ bool CModem::setConfig2()
  	buffer[26U] = 0x00U;
 	buffer[27U] = 0x00U;
 	buffer[28U] = 0x00U;
-
-	buffer[29U] = m_dmrColorCode;
-	buffer[30U] = m_dmrDelay;
 
 	buffer[31U] = 128U;
 	buffer[32U] = 0x00U;

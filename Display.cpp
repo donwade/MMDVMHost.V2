@@ -99,86 +99,6 @@ void CDisplay::setQuit()
 	setQuitInt();
 }
 
-void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
-{
-	assert(type != nullptr);
-
-	if (slotNo == 1U) {
-		m_timer1.start();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_timer2.start();
-		m_mode2 = MODE_IDLE;
-	}
-	writeDMRInt(slotNo, src, group, dst, type);
-}
-
-void CDisplay::writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
-{
-	assert(type != nullptr);
-
-	if (slotNo == 1U) {
-		m_timer1.start();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_timer2.start();
-		m_mode2 = MODE_IDLE;
-	}
-
-	if (int err = writeDMRIntEx(slotNo, src, group, dst, type)) {
-		std::string src_str = src.get(keyCALLSIGN);
-		if (err < 0 && !src.get(keyFIRST_NAME).empty()) {
-		  	// emulate the result of old CDMRLookup::findWithName()
-			//  (it returned callsign and firstname)
-			src_str += " " + src.get(keyFIRST_NAME);
-		}
-		writeDMRInt(slotNo, src_str, group, dst, type);
-	}
-}
-
-void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeDMRRSSIInt(slotNo, rssi);
-}
-
-void CDisplay::writeDMRTA(unsigned int slotNo, const unsigned char* talkerAlias, const char* type)
-{
-	if (::strcmp(type, " ") == 0) {
-		writeDMRTAInt(slotNo, (unsigned char*)"", type);
-		return;
-	}
-
-	if (::strlen((char*)talkerAlias) >= 4U)
-		writeDMRTAInt(slotNo, (unsigned char*)talkerAlias, type);
-}
-
-void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
-{
-	writeDMRBERInt(slotNo, ber);
-}
-
-void CDisplay::clearDMR(unsigned int slotNo)
-{
-	if (slotNo == 1U) {
-		if (m_timer1.hasExpired()) {
-			clearDMRInt(slotNo);
-			m_timer1.stop();
-			m_mode1 = MODE_IDLE;
-		} else {
-			m_mode1 = MODE_DMR;
-		}
-	} else {
-		if (m_timer2.hasExpired()) {
-			clearDMRInt(slotNo);
-			m_timer2.stop();
-			m_mode2 = MODE_IDLE;
-		} else {
-			m_mode2 = MODE_DMR;
-		}
-	}
-}
-
 void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != nullptr);
@@ -244,11 +164,6 @@ void CDisplay::clock(unsigned int ms)
 	m_timer1.clock(ms);
 	if (m_timer1.isRunning() && m_timer1.hasExpired()) {
 		switch (m_mode1) {
-		case MODE_DMR:
-			clearDMRInt(1U);
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
 		case MODE_P25:
 			clearP25Int();
 			m_mode1 = MODE_IDLE;
@@ -272,43 +187,14 @@ void CDisplay::clock(unsigned int ms)
 	// Timer/mode 2 are only used for DMR
 	m_timer2.clock(ms);
 	if (m_timer2.isRunning() && m_timer2.hasExpired()) {
-		if (m_mode2 == MODE_DMR) {
-			clearDMRInt(2U);
-			m_mode2 = MODE_IDLE;
-			m_timer2.stop();
-		}
+		m_mode2 = MODE_IDLE;
+		m_timer2.stop();
 	}
 
 	clockInt(ms);
 }
 
 void CDisplay::clockInt(unsigned int ms)
-{
-}
-
-int CDisplay::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
-{
-	/*
-	 * return value:
-	 *	< 0	error condition (i.e. not supported)
-	 *		-> call writeXXXXInt() to display
-	 *	= 0	no error, writeXXXXIntEx() displayed whole status
-	 *	= 1	no error, writeXXXXIntEx() displayed partial status
-	 *		-> call writeXXXXInt() to display remain part
-	 *	> 1	reserved for future use
-	 */
-	return -1;	// not supported
-}
-
-void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
-{
-}
-
-void CDisplay::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type)
-{
-}
-
-void CDisplay::writeDMRBERInt(unsigned int slotNo, float ber)
 {
 }
 
@@ -326,7 +212,6 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 	CDisplay *display = nullptr;
 
 	std::string type   = conf.getDisplay();
-	unsigned int dmrid = conf.getDMRId();
 
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
@@ -346,7 +231,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 		else
 			serial = new CUARTController(port, 115200U);
 
-		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex(), screenLayout);
+		display = new CTFTSurenoo(conf.getCallsign(), serial, brightness, conf.getDuplex(), screenLayout);
 	}
 	 else if (type == "LCDproc") {
 		std::string address       = conf.getLCDprocAddress();
@@ -370,7 +255,8 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-		display = new CLCDproc(address.c_str(), port, localPort, conf.getCallsign(), dmrid, displayClock, utc, conf.getDuplex(), dimOnIdle);
+								//string address, unsigned int port, unsigned short localPort, const std::string& callsign, bool displayClock, bool utc, bool duplex, bool dimOnIdle);
+		display = new CLCDproc(address.c_str(), port, localPort, conf.getCallsign(), displayClock, utc, conf.getDuplex(), dimOnIdle);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = conf.getHD44780Rows();

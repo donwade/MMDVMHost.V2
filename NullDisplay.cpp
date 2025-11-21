@@ -60,20 +60,6 @@ void CNullDisplay::setQuitInt()
 {
 }
 
-void CNullDisplay::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 1);
-#endif
-}
-
-void CNullDisplay::clearDMRInt(unsigned int slotNo)
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 0);
-#endif
-}
-
 void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 #if defined(RASPBERRY_PI)

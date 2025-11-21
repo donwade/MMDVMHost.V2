@@ -30,7 +30,7 @@
 class CTFTSurenoo : public CDisplay
 {
 public:
-	CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout);
+	CTFTSurenoo(const std::string& callsign, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout);
 	virtual ~CTFTSurenoo();
 
 	virtual bool open();
@@ -42,10 +42,6 @@ protected:
 	virtual void setErrorInt(const char* text);
 	virtual void setLockoutInt();
 	virtual void setQuitInt();
-
-	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-	virtual int  writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
-	virtual void clearDMRInt(unsigned int slotNo);
 
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void clearP25Int();
@@ -60,7 +56,6 @@ protected:
 
 private:
 	std::string   m_callsign;
-	unsigned int  m_dmrid;
 	ISerialPort*  m_serial;
 	unsigned int  m_brightness;
 	unsigned char m_mode;

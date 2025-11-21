@@ -95,22 +95,19 @@ bool           m_connected(false);
 char           m_displayBuffer1[BUFFER_MAX_LEN];
 char           m_displayBuffer2[BUFFER_MAX_LEN];
 
-const unsigned int DMR_RSSI_COUNT   = 4U;		// 4 * 360ms = 1440ms
 const unsigned int P25_RSSI_COUNT   = 7U;		// 7 * 180ms = 1260ms
 
-CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
+CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
 CDisplay(),
 m_address(address),
 m_port(port),
 m_localPort(localPort),
 m_callsign(callsign),
-m_dmrid(dmrid),
 m_displayClock(displayClock),
 m_utc(utc),
 m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
 m_dimOnIdle(dimOnIdle),
-m_dmr(false),
 m_clockDisplayTimer(1000U, 0U, 250U),   // Update the clock display every 250ms
 m_rssiCount1(0U),
 m_rssiCount2(0U)
@@ -195,7 +192,6 @@ void CLCDproc::setIdleInt()
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
-	m_dmr = false;
 }
 
 void CLCDproc::setErrorInt(const char* text)
@@ -211,7 +207,6 @@ void CLCDproc::setErrorInt(const char* text)
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
-	m_dmr = false;
 }
 
 void CLCDproc::setLockoutInt()
@@ -224,8 +219,6 @@ void CLCDproc::setLockoutInt()
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Lockout", m_cols - 6, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
-
-	m_dmr = false;
 }
 
 // LED 4 Green 8 Red 128 Yellow 136
@@ -240,104 +233,8 @@ void CLCDproc::setQuitInt()
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Stopped", m_cols - 6, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
-
-	m_dmr = false;
 }
 
-
-// LED 1 Green 1 Red 16 Yellow 17
-
-void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
-{
-	assert(type != nullptr);
-
-	if (!m_dmr) {
-		m_clockDisplayTimer.stop();          // Stop the clock display
-
-		socketPrintf(m_socketfd, "screen_set DMR -priority foreground");
-
-		if (m_duplex) {
-			if (m_rows > 2U)
-				socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-			if (slotNo == 1U)
-				socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-			else
-				socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
-		} else {
-			socketPrintf(m_socketfd, "widget_set DMR Slot1_ 1 %u \"\"", m_rows / 2);
-			socketPrintf(m_socketfd, "widget_set DMR Slot2_ 1 %u \"\"", m_rows / 2 + 1);
-
-			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
-			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 %u %u %u h 3 \"\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-		}
-	}
-
-	if (m_duplex) {
-		if (m_rows > 2U)
-			socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-
-		if (slotNo == 1U)
-			socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"%s > %s%s\"", m_rows / 2, m_cols - 1, m_rows / 2, src.c_str(), group ? "TG" : "", dst.c_str());
-		else
-			socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"%s > %s%s\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1, src.c_str(), group ? "TG" : "", dst.c_str());
-	} else {
-		socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-
-		if (m_rows == 2U) {
-			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 %u 2 h 3 \"%s > %s%s\"", m_cols - 1, src.c_str(), group ? "TG" : "", dst.c_str());
-		} else {
-			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 %u 2 h 3 \"%s >\"", m_cols - 1, src.c_str());
-			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, group ? "TG" : "", dst.c_str());
-		}
-	}
-	socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
-	m_dmr = true;
-	m_rssiCount1 = 0U; 
-  m_rssiCount2 = 0U; 
-} 
- 
-void CLCDproc::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi) 
-{ 
-	if (m_rows > 2) {	
-	  if (slotNo == 1U) {
-		  if (m_rssiCount1 == 0U)
-				socketPrintf(m_socketfd, "widget_set DMR Slot1RSSI %u %u -%3udBm", 1, 4, rssi); 
-
-			m_rssiCount1++; 
-
-			if (m_rssiCount1 >= DMR_RSSI_COUNT)
-				m_rssiCount1 = 0U; 
-		} else { 
-			if (m_rssiCount2 == 0U)
-				socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u -%3udBm", (m_cols / 2) + 1, 4, rssi); 
-
-			m_rssiCount2++; 
-
-			if (m_rssiCount2 >= DMR_RSSI_COUNT)
-				m_rssiCount2 = 0U; 
-		} 
-	}
-}
-
-void CLCDproc::clearDMRInt(unsigned int slotNo)
-{
-	m_clockDisplayTimer.stop();           // Stop the clock display
-
-	if (m_duplex) {
-		if (slotNo == 1U) {
-			socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
-			socketPrintf(m_socketfd, "widget_set DMR Slot1RSSI %u %u %*.s", 1, 4, m_cols / 2, "          ");
-		} else {
-			socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-			socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u %*.s", (m_cols / 2) + 1, 4, m_cols / 2, "          ");
-		}
-	} else {
-		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 \"Listening\"");
-		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
-		socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u %*.s", (m_cols / 2) + 1, 4, m_cols / 2, "          ");
-	}
-	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
-}
 
 
 // LED 2 Green 2 Red 32 Yellow 34
@@ -360,7 +257,6 @@ void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, co
 		socketPrintf(m_socketfd, "output 32"); // Set LED2 color red
 	}
 
-	m_dmr = false;
 	m_rssiCount1 = 0U;
 }
 
@@ -599,7 +495,6 @@ void CLCDproc::defineScreens()
 	socketPrintf(m_socketfd, "widget_add Status Date string");
 
 	socketPrintf(m_socketfd, "widget_set Status Callsign 1 1 %s", m_callsign.c_str());
-	socketPrintf(m_socketfd, "widget_set Status DMRNumber %u 1 %u", m_cols - 7, m_dmrid);
 	socketPrintf(m_socketfd, "widget_set Status Title 1 %u MMDVM", m_rows);
 	socketPrintf(m_socketfd, "widget_set Status Status %u %u Idle", m_cols - 3, m_rows);
 
