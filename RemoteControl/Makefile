@@ -8,24 +8,12 @@ CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -I/usr/local/include
 LIBS    = -lpthread -lutil
 LDFLAGS = -g -L/usr/local/lib
 
-#        DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o \
-# 		DMRDirectNetwork.o DMREMB.o DMREmbeddedData.o DMRFullLC.o \
-#        DMRGatewayNetwork.o DMRLookup.o DMRLC.o DMRNetwork.o \
-#        DMRShortLC.o DMRSlot.o DMRSlotType.o DMRAccessControl.o \ 
-#        DMRTA.o DMRTrellis.o \
-#        Modem.o
 
 OBJECTS = \
-		AMBEFEC.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o \
-        Golay2087.o Golay24128.o \
-		Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o MMDVMHost.o \
-		Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o  NullController.o NullDisplay.o  \
-		  \
-		P25Lookup.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o POCSAGControl.o \
-		POCSAGNetwork.o QR1676.o ./RemoteControl/RemoteControl.o RS129.o RS634717.o RSSIInterpolator.o SerialPort.o SMeter.o StopWatch.o Sync.o SHA256.o TFTSurenoo.o Thread.o \
-		Timer.o UARTController.o UDPController.o UDPSocket.o UserDB.o UserDBentry.o Utils.o 
+		../Log.o \
+		../UDPSocket.o ../RemoteCommand.o 
 
-all:		MMDVMHost 
+all: RemoteCommand
 
 MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(LDFLAGS) $(LIBS) -o MMDVMHost
@@ -33,7 +21,7 @@ MMDVMHost:	GitVersion.h $(OBJECTS)
 RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
 		$(CXX) Log.o RemoteCommand.o UDPSocket.o $(LDFLAGS) $(LIBS) -o RemoteCommand
 
-%.o: %.cpp
+%.o: ../%.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
 .PHONY install:

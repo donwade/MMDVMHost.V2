@@ -16,9 +16,9 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "RemoteControl.h"
-#include "MMDVMHost.h"
-#include "Log.h"
+#include "../RemoteControl.h"
+#include "../MMDVMHost.h"
+#include "../Log.h"
 
 #include <cstdio>
 #include <cstdlib>
